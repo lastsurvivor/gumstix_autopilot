@@ -15,11 +15,11 @@
 /*
 	Each function is bound to a thread which will run until autopilot is terminated.
 */
-void adcThreadRun(void *param);
-void serial1ThreadRun(void *param);
-void serial2ThreadRun(void *param);
-void loggerThreadRun(void *param);			
-void sysStatusTXThreadRun(void *param);
-void sensorTXThreadRun(void *param);
+void *adcThreadRun(void *param);
+void *serial1ThreadRun(void *param);
+void *serial2ThreadRun(void *param);
+void *loggerThreadRun(void *param);			
+void *sysStatusTXThreadRun(void *param);
+void *sensorTXThreadRun(void *param);
 
 #endif

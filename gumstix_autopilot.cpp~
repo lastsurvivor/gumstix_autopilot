@@ -19,7 +19,7 @@ pthread_t sysStatusTXThread;	// Responsible for transmitting SystemStatus to rem
 pthread_t sensorTXThread;		// Responsible for transmitting SharedMemory to remote
 
 /* System Function Declarations */
-void init_threads();				// Initializes and starts threads
+void init_threads();					// Initializes and starts threads
 void main_loop();
 void checkSensorFailure();			// Periodically checks sensorFailures
 void checkSystemFailure();			// Periodicaly checks systemFailures
