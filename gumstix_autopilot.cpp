@@ -11,12 +11,12 @@
 #include "Utility.h"
 
 /*System Thread Declarations */
-pthread_t adcThread;			// Responsible for copying ADC input to SharedMemory
-pthread_t serial1Thread;		// Responsible for copying Serial1 input to SharedMemory
-pthread_t serial2Thread;		// Responsible for copying Serial2 input to SharedMemory
+pthread_t adcThread;				// Responsible for copying ADC input to SharedMemory
+pthread_t serial1Thread;			// Responsible for copying Serial1 input to SharedMemory
+pthread_t serial2Thread;			// Responsible for copying Serial2 input to SharedMemory
 pthread_t loggerThread;			
-pthread_t sysStatusTXThread;	// Responsible for transmitting SystemStatus to remote
-pthread_t sensorTXThread;		// Responsible for transmitting SharedMemory to remote
+pthread_t sysStatusTXThread;		// Responsible for transmitting SystemStatus to remote
+pthread_t sensorTXThread;			// Responsible for transmitting SharedMemory to remote
 
 /* System Function Declarations */
 void init_threads();				// Initializes and starts threads
