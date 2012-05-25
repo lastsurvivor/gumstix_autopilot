@@ -24,3 +24,24 @@ float getCpuLoad()
 char* getDateString()
 {
 }
+
+
+/*******************************************************************************
+* Function Name  : microsSinceEpoch
+* Input          : -
+* Output         : -
+* Return         : Very obvious...
+* Description    : Returns in int64 format
+*******************************************************************************/
+uint64_t microsSinceEpoch()
+{
+ 
+	struct timeval tv;
+ 
+	uint64_t micros = 0;
+ 
+	gettimeofday(&tv, NULL);  
+	micros =  ((uint64_t)tv.tv_sec) * 1000000 + tv.tv_usec;
+ 
+	return micros;
+}

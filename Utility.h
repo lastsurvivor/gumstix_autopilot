@@ -14,7 +14,11 @@
 #ifndef GSTIX_SYS_UTIL_H
 #define GSTIX_SYS_UTIL_H
 
+#include <stdint.h>
+#include <sys/time.h>
+#include <stdlib.h>
+
 float getCpuLoad();
 char* getDateString();
-
+uint64_t microsSinceEpoch();
 #endif

@@ -14,14 +14,22 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>				/* String function definitions */
-#include <unistd.h>				/* UNIX standard function definitions */
-#include <fcntl.h>				/* File control definitions */
-#include <errno.h>				/* Error number definitions */
-#include <termios.h>			/* POSIX terminal control definitions */
-#include "adcAccess.h"		/* Adc Read functions */
+#include <string.h>					/* String function definitions */
+#include <unistd.h>					/* UNIX standard function definitions */
+#include <fcntl.h>					/* File control definitions */
+#include <errno.h>					/* Error number definitions */
+#include <termios.h>				/* POSIX terminal control definitions */
+#include "adcAccess.h"				/* Adc Read functions */
 
 
+#include "mavlink/common/mavlink.h"	/* Communication Operations using MAVLINK */
+#include <errno.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <time.h>
+#include <sys/time.h>
+#include <arpa/inet.h>
 /*
 	Each function is bound to a thread which will run until autopilot is terminated.
 */

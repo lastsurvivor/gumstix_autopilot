@@ -5,6 +5,7 @@
 #include "adcAccess.h"						// ADC Operations
 
 
+
 /*******************************************************************************
 * Function Name  : adcThreadRun
 * Input          : SharedMemory Pointer
@@ -43,8 +44,7 @@ void *adcThreadRun(void *param)
 	}
 
 	close(fd);
-	
-					
+				
 }
 
 
@@ -63,6 +63,7 @@ void *serial1ThreadRun(void *param)
 	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
 
 	int fd;
+	int numBytez;						//Number of Bytes read from serialInterface
 	float roll, pitch, yaw;				//Internal Storage
 	struct termios options;				//Define Serial Port Options
 	fd = open_serial(serial1Device);	//Open Serial Port
@@ -87,12 +88,12 @@ void *serial1ThreadRun(void *param)
 	while(1){
 		search_header:
 		while( byte != 's'){
-			read(fd, &byte, 1);
+			numBytez = read(fd, &byte, 1);
 		}
-		read(fd, &byte, 1);
+		numBytez = read(fd, &byte, 1);
 		if ( byte != 'n')
 			goto search_header;
-		read(fd, &byte, 1);
+		numBytez = read(fd, &byte, 1);
 		if ( byte != 'p')
 			goto search_header;
 
@@ -100,7 +101,7 @@ void *serial1ThreadRun(void *param)
 		if ( SERIAL1_DEBUG)
 			printf("Valid Package Start Detected \n");
 
-		read(fd, &byte, 1);
+		numBytez = read(fd, &byte, 1);
 		if ( byte != SENSOR_DATA){
 			continue;
 			/*Interpret ChannelData Here.
@@ -109,9 +110,9 @@ void *serial1ThreadRun(void *param)
 			 */
 		}
 
-		read(fd, &len, 1);
-		read(fd, &flagByte1, 1);
-		read(fd, &flagByte2, 1);
+		numBytez = read(fd, &len, 1);
+		numBytez = read(fd, &flagByte1, 1);
+		numBytez = read(fd, &flagByte2, 1);
 		/*Interpret ChannelData Here.
 		 * v1.0 For now we get raw, pitch, roll with default settings
 		 * v2.0 determine active channels and interpret all data
@@ -186,8 +187,131 @@ void *serial2ThreadRun(void *param)
 void *loggerThreadRun(void *param)	
 {
 }
+
+/*******************************************************************************
+* Function Name  : sysStatusTXThreadRun
+* Input          : 
+* Output         : Transmits system status to remote computer (Slow Comm)
+* Return         : None
+* Description    : Transmits system status with an interval of sysStatusSleepPeriod 
+*				   defined in SystemConfig.h
+*******************************************************************************/
 void *sysStatusTXThreadRun(void *param)
 {
+		char target_ip[100];
+    	float position[6] = {};
+    	int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    	struct sockaddr_in gcAddr; 
+    	struct sockaddr_in locAddr;
+    	//struct sockaddr_in fromAddr;
+    	uint8_t buf[BUFFER_LENGTH];
+    	ssize_t recsize;
+    	socklen_t fromlen;
+    	int bytes_sent;
+    	mavlink_message_t msg;
+    	uint16_t len;
+    	int i = 0;
+    	//int success = 0;
+    	unsigned int temp = 0;
+    	
+    	strcpy(target_ip, baseStationIP);			//Ground Station's IP Address defined in SystemConfig
+    	
+    	memset(&locAddr, 0, sizeof(locAddr));
+    	locAddr.sin_family = AF_INET;
+    	locAddr.sin_addr.s_addr = INADDR_ANY;
+    	locAddr.sin_port = htons(connectTXPort1);   // DEFINED IN SYSTEM CONFIG
+    	
+     	/* Bind the socket to port connectTXPort1 - necessary to receive packets from qgroundcontrol */ 
+    	if (-1 == bind(sock,(struct sockaddr *)&locAddr, sizeof(struct sockaddr)))
+        {
+    		perror("error bind failed: sysStatusTXThreadRun");
+    		close(sock);
+    		exit(EXIT_FAILURE);
+        }    	 	
+    	
+    	/* Attempt to make it non blocking */
+    	if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0)
+        {
+    		fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
+    		close(sock);
+    		exit(EXIT_FAILURE);
+        }
+        
+        memset(&gcAddr, 0, sizeof(gcAddr));
+    	gcAddr.sin_family = AF_INET;
+    	gcAddr.sin_addr.s_addr = inet_addr(target_ip);
+    	gcAddr.sin_port = htons(connectRXPort1);    	
+    	
+    	while(1 == 1){
+    		/*Send Heartbeat */
+    		mavlink_msg_heartbeat_pack(1, 200, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, MAV_MODE_MANUAL_ARMED, 0, MAV_STATE_ACTIVE);
+    		len = mavlink_msg_to_send_buffer(buf, &msg);
+    		bytes_sent = sendto(sock, buf, len, 0, (struct sockaddr*)&gcAddr, sizeof(struct sockaddr_in));
+    		/* Send Status */
+    		mavlink_msg_sys_status_pack(1,  /* system_id ID of this system */
+					  MAV_COMP_ID_ALL,  /* component_id ID of this component */
+					  &msg, /*The MAVLink channel this message was sent over */
+					  0,    /*onboard_control_sensors_present */
+					  0,    /*onboard_control_sensors_enabled */
+					  0,    /*onboard_control_sensors_health */
+					  500,  /*load Maximum usage in percent of the mainloop time */
+					  11000,/*Battery voltage, in millivolts */ 
+					  -1,   /*Battery current, in 10*milliamperes */
+					  100,  /*Remaining battery energy: (0%: 0, 100%: 100) */
+					  0,    /*Communication drops in percent, (0%: 0, 100%: 10'000) */
+					  0,    /*Communication errors (UART, I2C, SPI, CAN), dropped packets on all linksr */
+					  0,    /*Autopilot-specific errors */
+					  0,    /*Autopilot-specific errors */
+					  0,    /*Autopilot-specific errors */
+					  0);   /*Autopilot-specific errors */   
+    		len = mavlink_msg_to_send_buffer(buf, &msg);
+    		bytes_sent = sendto(sock, buf, len, 0, (struct sockaddr*)&gcAddr, sizeof (struct sockaddr_in));
+			/* Send global position */
+			mavlink_msg_global_position_int_pack(255, 200, &msg, 0, 408931000, 293750000, 550000,550000, 0,0,0,0);
+			len = mavlink_msg_to_send_buffer(buf, &msg);
+			bytes_sent = sendto(sock, buf, len, 0, (struct sockaddr*)&gcAddr, sizeof(struct sockaddr_in));    							  
+     		/* Receive from GroundStation */
+    		memset(buf, 0, BUFFER_LENGTH);
+    		recsize = recvfrom(sock, (void *)buf, BUFFER_LENGTH, 0, (struct sockaddr *)&gcAddr, &fromlen);
+    		if (recsize > 0)
+          	{
+    			// Something received - print out all bytes and parse packet
+    			mavlink_message_t msg;
+    			mavlink_status_t status;
+    			printf("Bytes Received: %d\nDatagram: ", (int)recsize);
+    			for (i = 0; i < recsize; ++i){
+    				temp = buf[i];
+    				printf("%02x ", (unsigned char)temp);
+    				if (mavlink_parse_char(MAVLINK_COMM_0, buf[i], &msg, &status))
+    				{
+    					// Packet received
+    					printf("\nReceived packet: SYS: %d, COMP: %d, LEN: %d, MSG ID: %d\n", msg.sysid, msg.compid, msg.len, msg.msgid);
+						switch(msg.msgid)
+						{
+								case MAVLINK_MSG_ID_HEARTBEAT:
+								{
+							  // E.g. read GCS heartbeat and go into
+						                      // comm lost mode if timer times out
+								}
+								  break;
+							case MAVLINK_MSG_ID_COMMAND_LONG:
+							  // EXECUTE ACTION
+							  break;
+							case MAVLINK_MSG_ID_PING:
+								printf("\nPing request from SuGroundControl! %d\n", msg.sysid, msg.compid, msg.len, msg.msgid);
+							break;
+							default:
+							//Do nothing
+							  break;
+						}
+    				}
+    			}
+    			printf("\n");
+    		}
+    		memset(buf, 0, BUFFER_LENGTH);
+    		usleep(sysStatusSleepPeriod * 1000); // Sleep one second    				
+					   		
+    	}
 }
 void *sensorTXThreadRun(void *param)
 {

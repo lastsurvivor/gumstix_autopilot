@@ -38,14 +38,20 @@ static const int sensorTXSleepPeriod = 100;		// Gumstix system state communicati
 #define MSG_SYS_START  "AUTOPILOT SYSTEM STARTED\n"
 
 /*Gumstix Hardware Configuration */
-#define MIN_OVERO_CHANNEL 2						/*Gumstix ADC Pins Enumeration Minimum , default : 2*/
-#define MAX_OVERO_CHANNEL 7						/*Gumstix ADC Pins Enumeration Maximum , default : 7*/
-#define SONAR1			  3						/*Sonar sensor1 Adc Channel Connection , default : 3*/
+#define MIN_OVERO_CHANNEL 2								/*Gumstix ADC Pins Enumeration Minimum , default : 2*/
+#define MAX_OVERO_CHANNEL 7								/*Gumstix ADC Pins Enumeration Maximum , default : 7*/
+#define SONAR1			  3								/*Sonar sensor1 Adc Channel Connection , default : 3*/
 
 /*Sonar Sensor Configuration */
-#define sonarGain 0.00381875; 					/* Default : 0.00381875 */
-static double dt = 0.06; 						/* dt of LowPassFilter for Sonar Sensor */
-static double RC = 0.06; 						/* time constant of LowPassFilter of Sonar Sensor */
+#define sonarGain 0.00381875; 							/* Default : 0.00381875 */
+static double dt = 0.06; 								/* dt of LowPassFilter for Sonar Sensor */
+static double RC = 0.06; 								/* time constant of LowPassFilter of Sonar Sensor */
 
+/*Network Configuration */
+static const char *baseStationIP = "192.168.1.250";   	/* Ground Station's IPV4 Addres , default: "192.168.1.250" */
+static const int connectTXPort1  = 14553;   	  		/* TX port for system state comm , default: 14553 */	
+static const int connectRXPort1  = 14550;   	  		/* RX port for system state comm , default: 14550 */
 
+/*MAVLINK Communication Protocol Configuration */
+#define BUFFER_LENGTH 2041 								// minimum buffer size that can be used with qnx (I don't know why)
 #endif
