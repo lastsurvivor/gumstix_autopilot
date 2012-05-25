@@ -1,6 +1,13 @@
-// gumstix_autopilot.cpp : Defines the entry point for the application.
-
-
+/*
+ ============================================================================
+ Name        : Gumstix_autopilot.h
+ Author      : Taygun Kekec
+ Version     : 1.0
+ Copyright   : GNU
+ Description : 
+			   This file covers entry point of Autopilot application
+ ============================================================================
+ */
 #include <stdio.h>
 #include <stdlib.h>			//Utility Library
 #include <pthread.h>		//Thread Library
@@ -24,11 +31,10 @@ void main_loop();
 void checkSensorFailure();			// Periodically checks sensorFailures
 void checkSystemFailure();			// Periodicaly checks systemFailures
 
-
 int main(int argc, char *argv[])
 {
 	init_threads();
-	printf("SYSTEM STARTED\n");
+	printf(MSG_SYS_START);
 	return 0;
 }
 

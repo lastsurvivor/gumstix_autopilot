@@ -30,7 +30,7 @@ int close_serial(char *serialDevice)
 	return (fd);
 }
 
-void sendPacket(int fd, char command, char pack_len,unsigned char* data)  {
+void sendPacket(int fd, char command, char pack_len, char* data)  {
 	int i = 0;
 	static unsigned char header[5] = { 's', 'n', 'p'};
 	header[3] = command;	// Write PT
@@ -87,7 +87,6 @@ int sendCommandWaitACK(int fd, unsigned char command)
 
 int sendDataCommandWaitACK(int fd, unsigned char command, char len, unsigned char *data)
 {
-
 	int offset = 0;
 	unsigned char dataBuffer[50];
 	tcflush(fd, TCIOFLUSH );
@@ -108,9 +107,6 @@ int sendDataCommandWaitACK(int fd, unsigned char command, char len, unsigned cha
 }
 
 int imuTestmain(int argc, char *argv[]) {
-
-	float roll,pitch,yaw;
-	
 	struct termios options;
 
 	//Open Serial
@@ -176,7 +172,7 @@ int imuTestmain(int argc, char *argv[]) {
 			goto search_header;
 
 		//Valid Package Start here{
-		if ( SERIAL1_DEBUG)
+		if ( DEBUG)
 			printf("Valid Package Start Detected \n");
 
 		read(fd, &byte, 1);
@@ -196,7 +192,7 @@ int imuTestmain(int argc, char *argv[]) {
 		 * v2.0 determine active channels and interpret all data
 		 */
 
-		if ( SERIAL1_DEBUG) {
+		if ( DEBUG) {
 		printf("Type: %d\n", (unsigned int)byte);
 		printf("Len: %d\n", (unsigned int)len);
 		printf("Flag1: %d\n", (unsigned int)flagByte1);

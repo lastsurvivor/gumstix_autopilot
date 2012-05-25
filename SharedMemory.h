@@ -11,7 +11,9 @@
 #ifndef GSTIX_SYS_SHARED_H
 #define GSTIX_SYS_SHARED_H
 
-namespace SharedMemory{
+static double imuRoll;
+static double imuPitch;
+static double imuYaw;
 
-};
+
 #endif
