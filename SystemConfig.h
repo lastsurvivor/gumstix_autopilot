@@ -20,7 +20,7 @@ static const char *algLogPath    = "algorithm/";		// Algorithms' logging directo
 static const char *flightLogPath = "flight/";			// Flight logging directory. Default is "flight/"
 static const char *serial1Device = "/dev/ttyS0";		// First serial port device address
 static const char *serial2Device = "/dev/ttyS2";		// Second serial port device address
-static const char *adcDevice     = "/dev/twl4030-madc"	// Gumstix ADC Access Device
+static const char *adcDevice     = "/dev/twl4030-madc";	// Gumstix ADC Access Device
 /* Thread Configuration 
  *
  * All threads on system has a period of sleep. 
@@ -36,7 +36,10 @@ static const int sensorTXSleepPeriod = 100;		// Gumstix system state communicati
 /*System Notification Messages */
 static const char *MSG_SYS_START = "AUTOPILOT SYSTEM STARTED\n";
 
-/*Sensor Gain Configuration */
+/*Gumstix Hardware Configuration */
+#define MIN_OVERO_CHANNEL 2			/*Gumstix ADC Pins Enumeration Minimum */
+#define MAX_OVERO_CHANNEL 7			/*Gumstix ADC Pins Enumeration Maximum */
+
 
 
 #endif
