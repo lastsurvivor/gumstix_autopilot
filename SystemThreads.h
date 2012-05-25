@@ -20,7 +20,7 @@
 #include <errno.h>					/* Error number definitions */
 #include <termios.h>				/* POSIX terminal control definitions */
 #include "adcAccess.h"				/* Adc Read functions */
-
+#include "Utility.h"				/* Utility functions */
 
 #include "mavlink/common/mavlink.h"	/* Communication Operations using MAVLINK */
 #include <errno.h>

@@ -48,7 +48,7 @@ void init_threads()
 {
 	int  iret1, iret2, iret3, iret4, iret5, iret6;
 	/* Create independent threads each of which will execute function */
-	iret1 = pthread_create( &adcThread, NULL, adcThreadRun, (void*) &memory);
+	//iret1 = pthread_create( &adcThread, NULL, adcThreadRun, (void*) &memory);
 	iret2 = pthread_create( &serial1Thread, NULL, serial1ThreadRun, (void*) &memory);
 	/* Serial2 is unused for now */
 	//iret3 = pthread_create( &serial2Thread, NULL, serial2ThreadRun, (void*) &memory);	

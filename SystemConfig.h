@@ -51,7 +51,8 @@ static double RC = 0.06; 								/* time constant of LowPassFilter of Sonar Sens
 static const char *baseStationIP = "192.168.1.250";   	/* Ground Station's IPV4 Addres , default: "192.168.1.250" */
 static const int connectTXPort1  = 14553;   	  		/* TX port for system state comm , default: 14553 */	
 static const int connectRXPort1  = 14550;   	  		/* RX port for system state comm , default: 14550 */
-
+static const int connectTXPort2  = 14554;   	  		/* TX port for sensor comm , default: 14554 */	
+static const int connectRXPort2  = 14550;   	  		/* RX port for sensor comm , default: 14550 */
 /*MAVLINK Communication Protocol Configuration */
 #define BUFFER_LENGTH 2041 								// minimum buffer size that can be used with qnx (I don't know why)
 #endif
