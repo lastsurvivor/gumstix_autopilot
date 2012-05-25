@@ -204,7 +204,11 @@ void *loggerThreadRun(void *param)
 	//...
 	
 	//Create directories if NOT existing........
-
+	DIR *dir = opendir(logPathRoot);
+	if ( dir == NULL ){
+		mkdir(logPathRoot, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	}
+	dir = opendir( stuff ...
 	
 	char FlightLogFileString[127];
 	char timeStamp[100];

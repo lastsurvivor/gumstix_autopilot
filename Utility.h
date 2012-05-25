@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctime>
+#include <dirent.h>
 
 #define PI 3.14159265
 
