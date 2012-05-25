@@ -13,14 +13,24 @@
 
 #include "SystemConfig.h"
 
-static float imuRoll;
-static float imuPitch;
-static float imuYaw;
+class SharedMemory{
+	private:
+	float imuRoll;
+	float imuPitch;
+	float imuYaw;
+    double adcValues_old[MAX_OVERO_CHANNEL];	/* array containing time t-1 adc values */
+    double adcValues[MAX_OVERO_CHANNEL];		// array containing time t   adc values */
+	
+	public:
+	float getRoll(){ return imuRoll; }
+	float getPitch() {return imuPitch; }
+	float getYaw(){ return imuYaw; }
+	float getSonar(int sonarId){ return adcValues[sonarId]; }
 
-/* Sonar Sensor Based Variables */
-#define sonarGain 0.00381875; 			
-static double dt = 0.06; 						/* dt of LowPassFilter for Sonar Sensor */
-static double RC = 0.06; 						/* time constant of LowPassFilter of Sonar Sensor */
-static double adcValues_old[MAX_OVERO_CHANNEL];	/* array containing time t-1 adc values */
-static double adcValues[MAX_OVERO_CHANNEL];		// array containing time t   adc values */
+	inline void setRoll(float roll){ imuRoll = roll; }
+	inline void setPitch(float pitch) { imuPitch = pitch; }
+	inline void setYaw(float yaw){ imuYaw = yaw; }
+	inline float setSonar(int sonarId, float value){ adcValues[sonarId] = value; }
+};
+
 #endif

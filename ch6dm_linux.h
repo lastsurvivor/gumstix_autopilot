@@ -8,7 +8,8 @@
  Version     : 1.0
  Copyright   : GNU
  Description : CH6DM IMU Open Source Serial Interface
-
+				- This file accesses shared memory, changes 
+				imuPitch, imuRoll, imuYaw variables.
  ============================================================================
 */
 
@@ -19,6 +20,7 @@
 #include <fcntl.h>				/* File control definitions */
 #include <errno.h>				/* Error number definitions */
 #include <termios.h>			/* POSIX terminal control definitions */
+#include "SharedMemory.h"		/* Will access imuPitch, imuRoll, imuYaw variables */
 
 /* IMU'S PROTOCOL'S MESSAGE FLAGS */
 #define SET_ACTIVE_CHANNELS         0x80
@@ -34,9 +36,9 @@
 #define SERIAL1_DEBUG 0
 
 /* Function Declarations */
-int open_serial(char *serialDevice);
+int open_serial(const char *serialDevice);
 int close_serial(char *serialDevice);
-void sendPacket(int fd, char command, char pack_len, char* data);
+void sendPacket(int fd, char command, char pack_len, unsigned char* data);
 int sendCommandWaitACK(int fd, unsigned char command);
 int sendDataCommandWaitACK(int fd, unsigned char command, char len, unsigned char *data);
 int imuTestmain(int argc, char *argv[]);

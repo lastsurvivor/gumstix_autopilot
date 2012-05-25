@@ -1,6 +1,6 @@
 #include "ch6dm_linux.h"
 
-int open_serial(char *serialDevice)
+int open_serial(const char *serialDevice)
 {
 	int fd; /* File descriptor for the port */
 	fd = open(serialDevice, O_RDWR | O_NDELAY);
@@ -30,8 +30,9 @@ int close_serial(char *serialDevice)
 	return (fd);
 }
 
-void sendPacket(int fd, char command, char pack_len, char* data)  {
+void sendPacket(int fd, char command, char pack_len, unsigned char* data)  {
 	int i = 0;
+	int numBytez;
 	static unsigned char header[5] = { 's', 'n', 'p'};
 	header[3] = command;	// Write PT
 	header[4] = pack_len;	// Write N
@@ -39,7 +40,7 @@ void sendPacket(int fd, char command, char pack_len, char* data)  {
 
 	for (i = 0; i < 5; i++) {
 		//Assume no error now. Later modify this lane as well.
-		write(fd,&header[i],1);
+		numBytez = write(fd,&header[i],1);
 		checksum+=header[i];
 	}
 
@@ -60,8 +61,8 @@ void sendPacket(int fd, char command, char pack_len, char* data)  {
 	// HERE I HAVE AN ERROR PROBABLY.
 	unsigned char firstChkByte = (char)checksum;
 	unsigned char secondChkByte = checksum >> 8;
-	write(fd, &firstChkByte,1);
-	write(fd, &secondChkByte, 1);
+	numBytez = write(fd, &firstChkByte,1);
+	numBytez = write(fd, &secondChkByte, 1);
 
 }
 
@@ -73,7 +74,7 @@ int sendCommandWaitACK(int fd, unsigned char command)
 	sendPacket(fd, command, 0, NULL);
 	//Wait for ACK
 	usleep(20000);
-	read(fd, &dataBuffer, 50);
+	int numBytez = read(fd, &dataBuffer, 50);
 	//Advance to 'p'
 	while( dataBuffer[offset++] != 'p');
 	tcflush(fd, TCIOFLUSH );
@@ -93,7 +94,7 @@ int sendDataCommandWaitACK(int fd, unsigned char command, char len, unsigned cha
 	sendPacket(fd, command, len, data);
 	//Wait for ACK
 	usleep(20000);
-	read(fd, &dataBuffer, 50);
+	int numBytez = read(fd, &dataBuffer, 50);
 	//Advance to 'p'
 	while( dataBuffer[offset++] != 'p');
 	tcflush(fd, TCIOFLUSH );
@@ -107,7 +108,10 @@ int sendDataCommandWaitACK(int fd, unsigned char command, char len, unsigned cha
 }
 
 int imuTestmain(int argc, char *argv[]) {
+
+	float roll, pitch, yaw;
 	struct termios options;
+	int returnFlag;
 
 	//Open Serial
 	int fd;
@@ -158,24 +162,25 @@ int imuTestmain(int argc, char *argv[]) {
 	else
 		printf("SET_BROADCAST_MODE succesfully set.\n");
 	*/
+	int numBytez;
 
 	while(1){
 		search_header:
 		while( byte != 's'){
-			read(fd, &byte, 1);
+			numBytez = read(fd, &byte, 1);
 		}
-		read(fd, &byte, 1);
+		numBytez = read(fd, &byte, 1);
 		if ( byte != 'n')
 			goto search_header;
-		read(fd, &byte, 1);
+		numBytez = read(fd, &byte, 1);
 		if ( byte != 'p')
 			goto search_header;
 
 		//Valid Package Start here{
-		if ( DEBUG)
+		if ( SERIAL1_DEBUG)
 			printf("Valid Package Start Detected \n");
 
-		read(fd, &byte, 1);
+		numBytez = read(fd, &byte, 1);
 		if ( byte != SENSOR_DATA){
 			continue;
 			/*Interpret ChannelData Here.
@@ -184,15 +189,15 @@ int imuTestmain(int argc, char *argv[]) {
 			 */
 		}
 
-		read(fd, &len, 1);
-		read(fd, &flagByte1, 1);
-		read(fd, &flagByte2, 1);
+		numBytez = read(fd, &len, 1);
+		numBytez = read(fd, &flagByte1, 1);
+		numBytez = read(fd, &flagByte2, 1);
 		/*Interpret ChannelData Here.
 		 * v1.0 For now we get raw, pitch, roll with default settings
 		 * v2.0 determine active channels and interpret all data
 		 */
 
-		if ( DEBUG) {
+		if ( SERIAL1_DEBUG) {
 		printf("Type: %d\n", (unsigned int)byte);
 		printf("Len: %d\n", (unsigned int)len);
 		printf("Flag1: %d\n", (unsigned int)flagByte1);
@@ -236,10 +241,23 @@ int imuTestmain(int argc, char *argv[]) {
         }
 
 		printf("yaw: %.2f pitch:%.2f roll:%.2f \n", yaw, pitch, roll);
+		
+		/************* SHARED MEMORY ACCESS - USE WITH CARE ***********************/
+		/**************************************************************************/
+		
+		/*
+		imuRoll = roll;
+		imuPitch = pitch;
+		imuYaw = yaw;
+		
+		*/
+		/**************************************************************************/
+		/************* SHARED MEMORY ACCESS - USE WITH CARE ***********************/
+		
 		//Flush Serial Buffer or we will process all packages by order...
 		tcflush(fd, TCIOFLUSH );
 		usleep(20000);
-		system("clear");
+		returnFlag = system("clear");
 
 
 	}

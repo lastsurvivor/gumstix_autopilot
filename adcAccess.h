@@ -20,7 +20,6 @@
 #include <sys/ioctl.h>
 #include <stdint.h>
 #include "SharedMemory.h"
-
 /*******************************************************************************
 *	Various Definitions for I/O
 *******************************************************************************/
@@ -142,8 +141,10 @@ int twl4030_madc_conversion(struct twl4030_madc_request *conv);
 /*   Function Declarations
 *******************************************************************************/
 double sonarLowPassFilter(double *yi_1, double *xi, double *dt, double *RC);
-int read_channel(int fd, int ch, int avg, int machine_read);
-int adcTestMain(int argc, char **argv);
+
+
+int read_channel(int fd, int ch, int avg, int machine_read, SharedMemory *mem);
+//int adcTestMain(int argc, char **argv);
 
 
 

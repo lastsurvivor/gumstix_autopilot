@@ -26,14 +26,20 @@ pthread_t sysStatusTXThread;		// Responsible for transmitting SystemStatus to re
 pthread_t sensorTXThread;			// Responsible for transmitting SharedMemory to remote
 
 /* System Function Declarations */
+void init_sharedMemory();			// Initializes shared memory and its content
 void init_threads();				// Initializes and starts threads
 void main_loop();
 void checkSensorFailure();			// Periodically checks sensorFailures
 void checkSystemFailure();			// Periodicaly checks systemFailures
+void systemMonitor();				// Periodically updates console gui
+
+SharedMemory memory;
 
 int main(int argc, char *argv[])
 {
+	init_sharedMemory();
 	init_threads();
+	main_loop();
 	printf(MSG_SYS_START);
 	return 0;
 }
@@ -41,19 +47,46 @@ int main(int argc, char *argv[])
 void init_threads()
 {
 	int  iret1, iret2, iret3, iret4, iret5, iret6;
-	char *parameter = "Reserved for future usage";
 	/* Create independent threads each of which will execute function */
-	iret1 = pthread_create( &adcThread, NULL, adcThreadRun, (void*) parameter);
-	iret2 = pthread_create( &serial1Thread, NULL, serial1ThreadRun, (void*) parameter);
+	iret1 = pthread_create( &adcThread, NULL, adcThreadRun, (void*) &memory);
+	iret2 = pthread_create( &serial1Thread, NULL, serial1ThreadRun, (void*) &memory);
 	/* Serial2 is unused for now */
-	//iret3 = pthread_create( &serial2Thread, NULL, serial2ThreadRun, (void*) parameter);	
-	iret4 = pthread_create( &loggerThread, NULL, loggerThreadRun, (void*) parameter);
-	iret5 = pthread_create( &sysStatusTXThread, NULL, sysStatusTXThreadRun, (void*) parameter);
-	iret6 = pthread_create( &sensorTXThread, NULL, sensorTXThreadRun, (void*) parameter);
+	//iret3 = pthread_create( &serial2Thread, NULL, serial2ThreadRun, (void*) &memory);	
+	iret4 = pthread_create( &loggerThread, NULL, loggerThreadRun, (void*) &memory);
+	iret5 = pthread_create( &sysStatusTXThread, NULL, sysStatusTXThreadRun, (void*) &memory);
+	iret6 = pthread_create( &sensorTXThread, NULL, sensorTXThreadRun, (void*) &memory);
 }
 
-
+void init_sharedMemory()
+{
+	//Intialize imuData
+	memory.setRoll(0);
+	memory.setPitch(0);
+	memory.setYaw(0);
+}
 
 void main_loop()
 {
+	//Main System Loop
+	for(;;){
+		usleep(50000);
+		systemMonitor();
+	}
+}
+
+void systemMonitor()
+{
+int c = system("clear");
+printf(" ============================================================================\n");
+printf(" %s \n" ,consoleName);
+printf(" \n");
+printf(" SharedMemory \n");
+printf(" ----------------------------------------------------------------------------\n");
+printf(" Roll:    %.3f\n",memory.getRoll()  );
+printf(" Pitch:   %.3f\n",memory.getPitch() );
+printf(" Yaw:     %.3f\n",memory.getYaw()   );
+printf(" Sonar1:  %.3f\n",memory.getSonar(SONAR1)); 
+printf(" ----------------------------------------------------------------------------\n");
+printf("System Time : %s", "NOT IMPLEMENTED\n");
+printf(" ============================================================================\n");
 }

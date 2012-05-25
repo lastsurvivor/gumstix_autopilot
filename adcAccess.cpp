@@ -7,8 +7,6 @@
 				   xi   - currentMeasurement
 				   dt   - samplingTime
 				   RC   - timeConstant
-				   
-					
 * Output         : yi - currentOutput
 * Description    : 
 * Author		 : Taygun Kekec
@@ -24,7 +22,8 @@ double sonarLowPassFilter(double *yi_1, double *xi, double *dt, double *RC)
 	return yi;	
 }
 
-int read_channel(int fd, int ch, int avg, int machine_read)
+
+int read_channel(int fd, int ch, int avg, int machine_read, SharedMemory *mem)
 {
 	int ret;
 	struct twl4030_madc_user_parms param;
@@ -50,18 +49,25 @@ int read_channel(int fd, int ch, int avg, int machine_read)
 			printf("madc[%d]: status = -1\n", ch);
 	}
 	else {
-		/* 10 bit ADC, reference voltage 2.5v */
+		//10 bit ADC, reference voltage 2.5v
 		voltage = (param.result * 2.5) / 1024.0;
 		currentRead = voltage / sonarGain;
 		// Apply Low Pass Filter to current reading
 		//adcValues[ch] = sonarLowPassFilter(&adcValues_old[ch], &currentRead, &dt, &RC);
-		adcValues[ch] = currentRead;
 		
-		if (machine_read)
-			printf("%d:%u:%0.2lf\n", ch, param.result, voltage);
-		else
-			printf("madc[%2d] raw = %4u  voltage = %0.2lf distance(cm):%lf\n",
-				ch, param.result, voltage, adcValues[ch]);
+		
+		
+		/* WARNING SHARED MEMORY ACCESS */
+		mem->setSonar( ch, currentRead);
+		/* WARNING SHARED MEMORY ACCESS */
+		
+		if (machine_read){
+			//printf("%d:%u:%0.2lf\n", ch, param.result, voltage);
+			}
+		else{
+		
+			//printf("madc[%2d] raw = %4u  voltage = %0.2lf distance(cm):%lf\n", ch, param.result, voltage, adcValues[ch]);
+			}
 	}
 
 	return param.status;
@@ -79,8 +85,7 @@ void usage(const char *argv_0)
 	printf("  Example: %s -a 2 4 6\n\n", argv_0);
 }
 
-
-
+/*
 int adcTestMain(int argc, char **argv)
 {
 
@@ -141,4 +146,4 @@ int adcTestMain(int argc, char **argv)
 
 	return 0;
 }
-
+*/

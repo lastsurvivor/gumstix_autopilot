@@ -3,15 +3,54 @@
 #include "SystemConfig.h"
 #include "ch6dm_linux.h"					// IMU Operations
 #include "adcAccess.h"						// ADC Operations
+
+
+/*******************************************************************************
+* Function Name  : adcThreadRun
+* Input          : SharedMemory Pointer
+* Output         : Updates Shared Memory Variables (adcValues ...)
+* Return         : None
+* Description    : Reads adcDevice1 with an interval of adcSleepPeriod 
+*				   defined in SystemConfig.h
+*******************************************************************************/
 void *adcThreadRun(void *param)
 {
+	int argc = 1;
+	char **argv = NULL;
 	
+	SharedMemory *mem;
+	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
+	
+	int fd, i, ch, avg, machine_read, opt;
+
+	fd = open(adcDevice, O_RDWR | O_NONBLOCK, 0);
+	if (fd < 0) {
+		perror("open");
+		exit(1);
+	}
+	
+	ch = -1;
+	avg = 0;
+	machine_read = 0;
+	
+	if (optind == argc) {
+		while( 1 == 1 ) {
+			for (i = MIN_OVERO_CHANNEL; i <= MAX_OVERO_CHANNEL; i++){
+				read_channel(fd, i, avg, machine_read, mem);
+			}
+			usleep(adcSleepPeriod);
+		}
+	}
+
+	close(fd);
+	
+					
 }
 
 
 /*******************************************************************************
 * Function Name  : serial1ThreadRun
-* Input          : None
+* Input          : SharedMemory Pointer
 * Output         : Updates Shared Memory Variables (imuRoll,imuPitch,imuYaw)
 * Return         : None
 * Description    : Reads serialDevice1 with an interval of serialSleepPeriod 
@@ -20,13 +59,16 @@ void *adcThreadRun(void *param)
 
 void *serial1ThreadRun(void *param)
 {
+	SharedMemory *mem;
+	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
+
+	int fd;
 	float roll, pitch, yaw;				//Internal Storage
 	struct termios options;				//Define Serial Port Options
-	fd = open_serial(serial1Device);		//Open Serial Port
+	fd = open_serial(serial1Device);	//Open Serial Port
 
-	/*Configure Serial Port for Usage */
-	tcgetattr(fd, &options);
-	/* Set the new options for the port... */
+	
+	tcgetattr(fd, &options);			/*Configure Serial Port for Usage */
 	cfsetispeed(&options, 115200);		/* Set the baud rates to 115200 */
 	options.c_cflag |= (CLOCAL | CREAD);/* Enable the receiver and set local mode... */
 	options.c_cflag |= CS8;				/* Select 8 data bits */
@@ -55,7 +97,7 @@ void *serial1ThreadRun(void *param)
 			goto search_header;
 
 		//Valid Package Start here
-		if ( DEBUG)
+		if ( SERIAL1_DEBUG)
 			printf("Valid Package Start Detected \n");
 
 		read(fd, &byte, 1);
@@ -118,20 +160,21 @@ void *serial1ThreadRun(void *param)
             i += 2;
         }
 
-		printf("yaw: %.2f pitch:%.2f roll:%.2f \n", yaw, pitch, roll);
 		//Flush Serial Buffer or we will process all packages by order...
 		tcflush(fd, TCIOFLUSH );
 
 		/***************SHARED MEMORY ACCESS ****************/
 		/* UPDATE SHARED MEMORY - ONLY DO THIS WITH CAUTION */
-		imuRoll = roll;
-		imuPitch = pitch;
-		imuYaw = yaw;
+		//printf("yaw: %.2f pitch:%.2f roll:%.2f \n", yaw, pitch, roll);
+		mem->setRoll(roll);
+		mem->setPitch(pitch);
+		mem->setYaw(yaw);
 		/* UPDATE SHARED MEMORY - ONLY DO THIS WITH CAUTION */
 		/***************SHARED MEMORY ACCESS ****************/
 
 		usleep(serialSleepPeriod * 1000);		// first arg is in ms so...
-		system("clear");						//UNCOMMENT AFTER
+		
+		//system("clear");						//UNCOMMENT AFTER
 
 
 	}

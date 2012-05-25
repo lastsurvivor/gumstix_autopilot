@@ -12,7 +12,6 @@
 #ifndef GSTIX_SYS_THREADS_H
 #define GSTIX_SYS_THREADS_H
 
-#include "twl4030-madc.h"		/* Adc Read functions */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>				/* String function definitions */
@@ -20,6 +19,8 @@
 #include <fcntl.h>				/* File control definitions */
 #include <errno.h>				/* Error number definitions */
 #include <termios.h>			/* POSIX terminal control definitions */
+#include "adcAccess.h"		/* Adc Read functions */
+
 
 /*
 	Each function is bound to a thread which will run until autopilot is terminated.

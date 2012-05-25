@@ -16,18 +16,31 @@ LIBS = -lpthread
 # first target entry is the target invoked when typing 'make'
 default: autoPilot1.0
 
-autoPilot1.0: $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o
+autoPilot1.0: $(OUT_DIR)/ch6dm_linux.c.o $(OUT_DIR)/adcAccess.cpp.o $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o
 	@echo -n 'Linking autoPilot1.0... '
-	@$(CC) $(CFLAGS) -o autoPilot1.0 $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o $(LIBS)
+	@$(CC) $(CFLAGS) -o autoPilot1.0 $(OUT_DIR)/ch6dm_linux.c.o $(OUT_DIR)/adcAccess.cpp.o $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o $(LIBS)
+	@echo Done.
+
+$(OUT_DIR)/ch6dm_linux.c.o: ch6dm_linux.c ch6dm_linux.h SharedMemory.h \
+ SystemConfig.h
+	@echo -n 'Compiling ch6dm_linux.c... '
+	@$(CC) $(CFLAGS) -o $(OUT_DIR)/ch6dm_linux.c.o -c ch6dm_linux.c
+	@echo Done.
+
+$(OUT_DIR)/adcAccess.cpp.o: adcAccess.cpp adcAccess.h SharedMemory.h \
+ SystemConfig.h
+	@echo -n 'Compiling adcAccess.cpp... '
+	@$(CC) $(CFLAGS) -o $(OUT_DIR)/adcAccess.cpp.o -c adcAccess.cpp
 	@echo Done.
 
 $(OUT_DIR)/gumstix_autopilot.cpp.o: gumstix_autopilot.cpp SystemStatus.h \
- SystemConfig.h SharedMemory.h SystemThreads.h Utility.h
+ SystemConfig.h SharedMemory.h SystemThreads.h adcAccess.h Utility.h
 	@echo -n 'Compiling gumstix_autopilot.cpp... '
 	@$(CC) $(CFLAGS) -o $(OUT_DIR)/gumstix_autopilot.cpp.o -c gumstix_autopilot.cpp
 	@echo Done.
 
-$(OUT_DIR)/SystemThreads.cpp.o: SystemThreads.cpp SystemThreads.h
+$(OUT_DIR)/SystemThreads.cpp.o: SystemThreads.cpp SystemThreads.h \
+ adcAccess.h SharedMemory.h SystemConfig.h ch6dm_linux.h
 	@echo -n 'Compiling SystemThreads.cpp... '
 	@$(CC) $(CFLAGS) -o $(OUT_DIR)/SystemThreads.cpp.o -c SystemThreads.cpp
 	@echo Done.
