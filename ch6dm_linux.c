@@ -1,29 +1,4 @@
-#include "SystemThreads.h"
-
-/*
- ============================================================================
- Name        : ch6dm_linux.c
- Author      : Taygun Kekec
- Version     : 1.0
- Copyright   : GNU
- Description : CH6DM IMU Open Source Serial Interface
-
- ============================================================================
- */
-
-#define SET_ACTIVE_CHANNELS         0x80
-#define SET_SILENT_MODE             0x81
-#define SET_BROADCAST_MODE          0x82
-#define SENSOR_DATA 				0xB7
-#define COMMAND_COMPLETE 			0xB0
-#define COMMAND_FAILED 				0xB1
-#define SET_BROADCAST_MODE			0x82
-#define SCALE_FACTOR 0.0109863
-
-#define DEBUG 0
-
-float roll, pitch, yaw;
-unsigned int rollTrans, pitchTrans, yawTrans;
+#include "ch6dm_linux.h"
 
 int open_serial(char *serialDevice)
 {
