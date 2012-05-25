@@ -18,10 +18,18 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <math.h>
+#include <ctime>
 
 #define PI 3.14159265
 
 float getCpuLoad();
 char* getDateString();
+void getTimeString(char *timeStr);
 uint64_t microsSinceEpoch();
+void strReplace(
+    char * original, 
+    char * pattern, 
+    char *replacement,
+    char *returned
+);
 #endif

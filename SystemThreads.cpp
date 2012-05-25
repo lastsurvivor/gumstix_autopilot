@@ -184,8 +184,57 @@ void *serial1ThreadRun(void *param)
 void *serial2ThreadRun(void *param)
 {
 }
+
+/*******************************************************************************
+* Function Name  : loggerThreadRun
+* Input          : 
+* Output         : Logs system status & Shared Memory to Blackbox
+* Return         : None
+* Description    : 
+*******************************************************************************/
 void *loggerThreadRun(void *param)	
 {
+	SharedMemory *mem;
+	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
+
+	//Check for BlackBox folder's folder size
+	//If foldersize is greater than 10mb, dont start the autopilot and warn 
+	//User to backup the Blackbox folder.
+	
+	//...
+	
+	//Create directories if NOT existing........
+
+	
+	char FlightLogFileString[127];
+	char timeStamp[100];
+	char todayDate[100]; 
+	char *datePtr;
+	strcpy(FlightLogFileString, logPathRoot);			//Copy LogPathRoot 
+	strcat(FlightLogFileString, flightLogPath);			//Append FlightLogPath
+	datePtr = getDateString();							//Append date string to FlightLogFileString
+	strReplace(datePtr, " ", "_" , &todayDate[0]);		//Replace whitespaces with _
+	strcat(FlightLogFileString, &todayDate[0]);			//Append today's date
+	strcat(FlightLogFileString, ".txt");				//Append .txt extension to FlightLogFileString
+	
+	FILE *logFile;
+	while( 1 ){
+	
+	 	logFile = fopen(FlightLogFileString, "a+");
+		//Get timeString
+		datePtr = getDateString();
+	
+		//Append roll, pitch, yaw to logfile
+		fprintf(logFile, "ROLL: %.3f PITCH: %.3f YAW:%.3f SONAR1:%.3f TIME:%s ", mem->getRoll(), mem->getPitch(), mem->getYaw(), mem->getSonar(SONAR1), datePtr);
+
+		//Append systemStatus to logfile
+		
+		//write necessary variables....
+		
+		fclose(logFile);
+		usleep(loggerSleepPeriod * 1000);	
+	}
+	
 }
 
 /*******************************************************************************

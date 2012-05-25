@@ -30,7 +30,7 @@ static const char *adcDevice     = "/dev/twl4030-madc";	// Gumstix ADC Access De
  */
 static const int adcSleepPeriod = 50;			// Gumstix ADC Serial read period in milliseconds. Default is 50
 static const int serialSleepPeriod = 20;		// Gumstix Serial port read period in milliseconds. Default is 20
-static const int loggerSleepPeriod = 2000;		// Gumstix logger thread sleep in milliseconds. Default is 2000
+static const int loggerSleepPeriod = 1000;		// Gumstix logger thread sleep in milliseconds. Default is 1000
 static const int sysStatusSleepPeriod = 1000;	// Gumstix system state communication thread sleep in ms. Default is 1000
 static const int sensorTXSleepPeriod = 100;		// Gumstix system state communication thread sleep in ms. Default is 100
 
