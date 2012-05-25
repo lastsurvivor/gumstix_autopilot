@@ -36,7 +36,7 @@
 /* Function Declarations */
 int open_serial(char *serialDevice);
 int close_serial(char *serialDevice);
-void sendPacket(int fd, char command, char pack_len, char* data);
+void sendPacket(int fd, char command, char pack_len, unsigned char* data);
 int sendCommandWaitACK(int fd, unsigned char command);
 int sendDataCommandWaitACK(int fd, unsigned char command, char len, unsigned char *data);
 int imuTestmain(int argc, char *argv[]);
