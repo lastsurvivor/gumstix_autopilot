@@ -197,28 +197,38 @@ void *loggerThreadRun(void *param)
 	SharedMemory *mem;
 	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
 
+	
+	static char FlightLogFileString[127];
+	static char folderName[127]; 
+	char timeStr[100];
+	char todayDate[100]; 
+	
+	/* TO BE IMPLEMENTED 
 	//Check for BlackBox folder's folder size
 	//If foldersize is greater than 10mb, dont start the autopilot and warn 
 	//User to backup the Blackbox folder.
+	*/
 	
-	//...
-	
-	//Create directories if NOT existing........
-	DIR *dir = opendir(logPathRoot);
+	//Create Log directories if NOT existing........
+	strcpy(folderName, logPathRoot);
+	DIR *dir = opendir(folderName);
 	if ( dir == NULL ){
-		mkdir(logPathRoot, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+		mkdir(folderName, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	//Create logRoot directory
+		strcat(folderName, flightLogPath);							
+		mkdir(folderName, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	//Create flightLogRoot directory
+		strcpy(folderName, logPathRoot);
+		strcat(folderName, algLogPath);							
+		mkdir(folderName, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	//Create algorithmLogRoot directory
 	}
-	dir = opendir( stuff ...
-	
-	char FlightLogFileString[127];
-	char timeStamp[100];
-	char todayDate[100]; 
+
 	char *datePtr;
 	strcpy(FlightLogFileString, logPathRoot);			//Copy LogPathRoot 
 	strcat(FlightLogFileString, flightLogPath);			//Append FlightLogPath
-	datePtr = getDateString();							//Append date string to FlightLogFileString
-	strReplace(datePtr, " ", "_" , &todayDate[0]);		//Replace whitespaces with _
-	strcat(FlightLogFileString, &todayDate[0]);			//Append today's date
+	//datePtr = getDateString();							//Append date string to FlightLogFileString
+	//strReplace(datePtr, " ", "_" , &todayDate[0]);		//Replace whitespaces with _
+	//strcat(FlightLogFileString, &todayDate[0]);			//Append today's hour::min
+	getTimeString(&timeStr[0]);
+	strcat(FlightLogFileString, timeStr);
 	strcat(FlightLogFileString, ".txt");				//Append .txt extension to FlightLogFileString
 	
 	FILE *logFile;
@@ -229,7 +239,7 @@ void *loggerThreadRun(void *param)
 		datePtr = getDateString();
 	
 		//Append roll, pitch, yaw to logfile
-		fprintf(logFile, "ROLL: %.3f PITCH: %.3f YAW:%.3f SONAR1:%.3f TIME:%s ", mem->getRoll(), mem->getPitch(), mem->getYaw(), mem->getSonar(SONAR1), datePtr);
+		fprintf(logFile, "ROLL: %.3f PITCH: %.3f YAW:%.3f SONAR1:%.3f TIME:%s", mem->getRoll(), mem->getPitch(), mem->getYaw(), mem->getSonar(SONAR1), datePtr);
 
 		//Append systemStatus to logfile
 		

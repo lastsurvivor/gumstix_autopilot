@@ -16,6 +16,7 @@
 
 /* System-Wide Configuration */
 static const char *consoleName   = "Autopilot Console";	// Default Console Application name. Default is "Autopilot Console"
+static const char *companyName   = "SabanciUniversity";	// Default Company name. Default is "SabanciUniversity"
 static const char *logPathRoot   = "./blackbox/";		// Root directory of system logpath. Default is "./blackbox"
 static const char *algLogPath    = "algorithm/";		// Algorithms' logging directory. Default is "algorithm/"
 static const char *flightLogPath = "flight/";			// Flight logging directory. Default is "flight/"
@@ -30,7 +31,7 @@ static const char *adcDevice     = "/dev/twl4030-madc";	// Gumstix ADC Access De
  */
 static const int adcSleepPeriod = 50;			// Gumstix ADC Serial read period in milliseconds. Default is 50
 static const int serialSleepPeriod = 20;		// Gumstix Serial port read period in milliseconds. Default is 20
-static const int loggerSleepPeriod = 1000;		// Gumstix logger thread sleep in milliseconds. Default is 1000
+static const int loggerSleepPeriod = 2000;		// Gumstix logger thread sleep in milliseconds. Default is 2000
 static const int sysStatusSleepPeriod = 1000;	// Gumstix system state communication thread sleep in ms. Default is 1000
 static const int sensorTXSleepPeriod = 100;		// Gumstix system state communication thread sleep in ms. Default is 100
 
@@ -53,6 +54,10 @@ static const int connectTXPort1  = 14553;   	  		/* TX port for system state com
 static const int connectRXPort1  = 14550;   	  		/* RX port for system state comm , default: 14550 */
 static const int connectTXPort2  = 14554;   	  		/* TX port for sensor comm , default: 14554 */	
 static const int connectRXPort2  = 14550;   	  		/* RX port for sensor comm , default: 14550 */
+
 /*MAVLINK Communication Protocol Configuration */
 #define BUFFER_LENGTH 2041 								// minimum buffer size that can be used with qnx (I don't know why)
+
+
+
 #endif

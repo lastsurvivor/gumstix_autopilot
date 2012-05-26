@@ -34,13 +34,15 @@ $(OUT_DIR)/adcAccess.cpp.o: adcAccess.cpp adcAccess.h SharedMemory.h \
 	@echo Done.
 
 $(OUT_DIR)/gumstix_autopilot.cpp.o: gumstix_autopilot.cpp SystemStatus.h \
- SystemConfig.h SharedMemory.h SystemThreads.h adcAccess.h Utility.h
+ SystemConfig.h SharedMemory.h SystemThreads.h adcAccess.h Utility.h \
+ mavlink/common/mavlink.h
 	@echo -n 'Compiling gumstix_autopilot.cpp... '
 	@$(CC) $(CFLAGS) -o $(OUT_DIR)/gumstix_autopilot.cpp.o -c gumstix_autopilot.cpp
 	@echo Done.
 
 $(OUT_DIR)/SystemThreads.cpp.o: SystemThreads.cpp SystemThreads.h \
- adcAccess.h SharedMemory.h SystemConfig.h ch6dm_linux.h
+ adcAccess.h SharedMemory.h SystemConfig.h Utility.h \
+ mavlink/common/mavlink.h ch6dm_linux.h
 	@echo -n 'Compiling SystemThreads.cpp... '
 	@$(CC) $(CFLAGS) -o $(OUT_DIR)/SystemThreads.cpp.o -c SystemThreads.cpp
 	@echo Done.
