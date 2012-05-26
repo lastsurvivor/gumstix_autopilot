@@ -20,17 +20,35 @@
 #include <math.h>
 #include <ctime>
 #include <dirent.h>
+#include <sys/stat.h>		// Linux Directory Functions
+#include <stdio.h>			// sprintf functions
 
 #define PI 3.14159265
 
-float getCpuLoad();
-char* getDateString();
-void getTimeString(char *timeStr);
-uint64_t microsSinceEpoch();
-void strReplace(
-    char * original, 
-    char * pattern, 
-    char *replacement,
-    char *returned
-);
+/* Console text styles for usage of textcolor() function */
+#define RESET		0
+#define BRIGHT 		1
+#define DIM			2
+#define UNDERLINE 	3
+#define BLINK		4
+#define REVERSE		7
+#define HIDDEN		8
+
+/* Console color enumerations for usage of textcolor() function */
+
+#define BLACK 		0
+#define RED		1
+#define GREEN		2
+#define YELLOW		3
+#define BLUE		4
+#define MAGENTA		5
+#define CYAN		6
+#define	WHITE		7
+
+float getCpuLoad();								//Returns cpuload
+char* getDateString();							//Returns date string
+void getTimeString(char *timeStr);				//Returns time string
+uint64_t microsSinceEpoch();					//Returns number of microseconds passed from Unixtime
+
+void textcolor(int attr, int fg, int bg);		//Change Text Color of Console 
 #endif
