@@ -77,16 +77,25 @@ void main_loop()
 void systemMonitor()
 {
 int c = system("clear");
-printf(" ============================================================================\n");
-printf(" %s \n" ,consoleName);
-printf(" \n");
-printf(" SharedMemory \n");
-printf(" ----------------------------------------------------------------------------\n");
+
+/*Print topline */
+printf(" ______________________________________________________________________________\n");
+textcolor(BRIGHT, GREEN, BLACK); printf(" %s",companyName); textcolor(BRIGHT, WHITE, BLACK);
+printf(" -------");
+textcolor(BRIGHT, GREEN, BLACK); printf(" %s" ,consoleName); textcolor(BRIGHT, WHITE, BLACK);
+printf(" --------- ");
+textcolor(BRIGHT, GREEN, BLACK); printf( "%s",getDateString() ); textcolor(BRIGHT, WHITE, BLACK);
+printf(" ==============================================================================\n");
+
+textcolor(BRIGHT, MAGENTA, BLACK);
+printf(" SharedMemory\n"); 
+textcolor(BRIGHT, WHITE, BLACK);
+//printf(" ****************************************************************************\n");
+textcolor(BRIGHT, BLUE, BLACK);
 printf(" Roll:    %.3f\n",memory.getRoll()  );
 printf(" Pitch:   %.3f\n",memory.getPitch() );
 printf(" Yaw:     %.3f\n",memory.getYaw()   );
 printf(" Sonar1:  %.3f\n",memory.getSonar(SONAR1)); 
-printf(" ----------------------------------------------------------------------------\n");
-printf("System Time : %s", "NOT IMPLEMENTED\n");
-printf(" ============================================================================\n");
+textcolor(BRIGHT, WHITE, BLACK);
+printf(" ==============================================================================\n");
 }
