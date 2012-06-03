@@ -1,6 +1,8 @@
 gumstix_autopilot
 =================
 Project Author : Taygun Kekec
+
+
 GNU LESSER GENERAL PUBLIC LICENSE
 
                     GNU GENERAL PUBLIC LICENSE
