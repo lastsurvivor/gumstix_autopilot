@@ -3,7 +3,7 @@
 #include "SystemConfig.h"
 #include "ch6dm_linux.h"					// IMU Operations
 #include "adcAccess.h"						// ADC Operations
-
+#include "tiC2000.h"						// Microcontroller Communication
 
 
 /*******************************************************************************
@@ -128,7 +128,7 @@ void *serial1ThreadRun(void *param)
 		/*Read all data to dataBuffer */
 		int byteNum, readBytes = 0, requiredBytes = 6;
 		while ( readBytes < requiredBytes){
-			if ( -1 != ( byteNum = read(fd, &dataBuffer, requiredBytes - readBytes) )){
+			if ( -1 != ( byteNum = read(fd, &dataBuffer[readBytes], requiredBytes - readBytes) )){
 				readBytes += byteNum;
 			}
 
@@ -183,6 +183,110 @@ void *serial1ThreadRun(void *param)
 }
 void *serial2ThreadRun(void *param)
 {
+
+	struct termios options;
+
+	//Open Serial
+	int fd;
+	if ( argc < 2 ){
+		fd = open_serial("/dev/ttyS0");
+	}
+	else
+		fd = open_serial(argv[1]);
+		
+	//Configure Serial
+	tcgetattr(fd, &options);
+	/* Set the new options for the port... */
+	/* Set the baud rates to 115200 */
+	cfsetispeed(&options, 115200);
+	/* Enable the receiver and set local mode... */
+	options.c_cflag |= (CLOCAL | CREAD);
+	/* Select 8 data bits */
+	options.c_cflag |= CS8;
+	/* No parity (8N1) configuration */
+	options.c_cflag &= ~PARENB;
+	options.c_cflag &= ~CSTOPB;
+	options.c_cflag &= ~CSIZE;
+	options.c_cflag |= CS8;
+	tcsetattr(fd, TCSAFLUSH, &options);
+
+	unsigned char byte = 'o';
+	unsigned char len;
+	unsigned char dataBuffer[32];
+	unsigned char flagByte1,flagByte2;
+	unsigned short motorDuty[4];
+	int i;
+	float U[4];
+
+	while(1){
+		search_header:
+		while( byte != 's'){
+			read(fd, &byte, 1);
+		}
+		read(fd, &byte, 1);
+		if ( byte != 'u')
+			goto search_header;
+
+		//Valid Package Start here{
+		/*
+		if ( DEBUG)
+			printf("Valid Package Start Detected \n");
+		*/
+
+		read(fd, &byte, 1);
+		read(fd, &len, 1);
+
+		/*
+		if ( DEBUG) {
+		printf("Type: %d\n", (unsigned int)byte);
+		printf("Len: %d\n", (unsigned int)len);
+		}*/
+
+		/*Read all data to dataBuffer */
+		int byteNum, readBytes = 0, requiredBytes = len;
+		while ( readBytes < requiredBytes){
+			if ( -1 != ( byteNum = read(fd, &dataBuffer[readBytes], requiredBytes - readBytes) )){
+				readBytes += byteNum;
+			}
+
+		}
+
+		/*Interpret packages individually*/
+		if ( byte == TI_SENSOR_DATA){
+			/*SULink only gets IMU values for now*/
+	        roll = char_to_float( &dataBuffer[0]);
+	        pitch = char_to_float( &dataBuffer[4]);
+	        yaw = char_to_float( &dataBuffer[8]);
+	        printf("roll:%.2f pitch:%.2f yaw: %.2f \n", yaw, pitch, roll);
+		}
+		else if ( byte == TI_PID_DATA){
+			for(i = 0; i < len; i++)
+				printf("[%x] ", dataBuffer[i]);
+
+			motorDuty[0] = char_to_short( &dataBuffer[0]);
+			motorDuty[1] = char_to_short( &dataBuffer[2]);
+			motorDuty[2] = char_to_short( &dataBuffer[4]);
+			motorDuty[3] = char_to_short( &dataBuffer[6]);
+			U[0] = char_to_float( &dataBuffer[8]);
+			U[1] = char_to_float( &dataBuffer[12]);
+			U[2] = char_to_float( &dataBuffer[16]);
+			U[3] = char_to_float( &dataBuffer[20]);
+
+			printf("MotorDuties: %d %d %d %d \n", motorDuty[0], motorDuty[1], motorDuty[2], motorDuty[3]);
+			printf("Virtual   U: %f %f %f %f \n", U[0], U[1], U[2], U[3]);
+		}
+		else{
+			//Other package types not supported for now
+			continue;
+		}
+
+		//Flush Serial Buffer or we will process all packages by order...
+		tcflush(fd, TCIOFLUSH );
+		usleep(serialSleepPeriod);
+		//system("clear");
+
+
+	}
 }
 
 /*******************************************************************************
@@ -238,9 +342,12 @@ void *loggerThreadRun(void *param)
 		//Get timeString
 		datePtr = getDateString();
 	
-		//Append roll, pitch, yaw to logfile
-		fprintf(logFile, "ROLL: %.3f PITCH: %.3f YAW:%.3f SONAR1:%.3f TIME:%s", mem->getRoll(), mem->getPitch(), mem->getYaw(), mem->getSonar(SONAR1), datePtr);
-
+		//Append shared memory to logfile
+		fprintf(logFile, "ROLL: %.2f PITCH: %.2f YAW:%.3f SONAR1:%.2f ", mem->getRoll(), mem->getPitch(), mem->getYaw(), mem->getSonar(SONAR1));
+		fprintf(logFile, "U1: %.2f U2: %.2f U3: %.2f U4: %.2f ", mem->getU1(), mem->getU2(), mem->getU3(), mem->getU4());
+		fprintf(logFile, "Duty1: %d Duty2: %d Duty3: %d Duty4: %d ", mem->getDuty1(), mem->getDuty2(), mem->getDuty3(), mem->getDuty4());
+		
+		fprintf(logFile, " TIME:%s\n", datePtr);
 		//Append systemStatus to logfile
 		
 		//write necessary variables....

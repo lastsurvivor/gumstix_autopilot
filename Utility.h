@@ -51,4 +51,9 @@ void getTimeString(char *timeStr);				//Returns time string
 uint64_t microsSinceEpoch();					//Returns number of microseconds passed from Unixtime
 
 void textcolor(int attr, int fg, int bg);		//Change Text Color of Console 
+
+
+float char_to_float(const char* cs);
+short char_to_short(const char* cs);
+int char_to_int(const char* cs);
 #endif
