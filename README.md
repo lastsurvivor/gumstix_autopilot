@@ -20,6 +20,7 @@ An autopilot application for Gumstix for usage in MAVs.
 Current Code Functionality :
    - Monitors CH6DM IMU
    - Monitors Overo ADC
+   - Added Half-Duplex Communication with TIC2000
    - Transmits local position, orientation using MAVLINK protocol
    - Logs system data to /blackbox/
 
