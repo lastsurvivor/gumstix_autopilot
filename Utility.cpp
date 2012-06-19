@@ -82,7 +82,7 @@ void textcolor(int attr, int fg, int bg)
 * Return         : Very obvious...
 * Description    : Combines 4 chars into a float
 *******************************************************************************/
-float char_to_float(const char* cs)
+float char_to_float( char* cs)
 {
     return *(float*)cs;
 }
@@ -94,7 +94,7 @@ float char_to_float(const char* cs)
 * Return         : Very obvious...
 * Description    : Combines 4 chars into a 16bit integer
 *******************************************************************************/
-short char_to_short(const char* cs)
+short char_to_short( char* cs)
 {
     return *(short*)cs;
 }
@@ -106,7 +106,7 @@ short char_to_short(const char* cs)
 * Return         : Very obvious...
 * Description    : Combines 4 chars into a 32bit integer
 *******************************************************************************/
-int char_to_int(const char* cs)
+int char_to_int( char* cs)
 {
     return *(int*)cs;
 }

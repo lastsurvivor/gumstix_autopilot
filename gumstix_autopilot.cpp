@@ -38,7 +38,9 @@ SharedMemory memory;
 int main(int argc, char *argv[])
 {
 	init_sharedMemory();
+	printf("Shared Memory Initialized\n");
 	init_threads();
+	printf("Threads has been initialized\n");
 	main_loop();
 	printf(MSG_SYS_START);
 	return 0;
@@ -48,10 +50,10 @@ void init_threads()
 {
 	int  iret1, iret2, iret3, iret4, iret5, iret6;
 	/* Create independent threads each of which will execute function */
-	//iret1 = pthread_create( &adcThread, NULL, adcThreadRun, (void*) &memory);
-	iret2 = pthread_create( &serial1Thread, NULL, serial1ThreadRun, (void*) &memory);
-	/* Serial2 is unused for now */
-	//iret3 = pthread_create( &serial2Thread, NULL, serial2ThreadRun, (void*) &memory);	
+	iret1 = pthread_create( &adcThread, NULL, adcThreadRun, (void*) &memory);
+	//iret2 = pthread_create( &serial1Thread, NULL, serial1ThreadRun, (void*) &memory);
+	/* Serial2 is TI Comm for now */
+	iret3 = pthread_create( &serial2Thread, NULL, serial2ThreadRun, (void*) &memory);	
 	iret4 = pthread_create( &loggerThread, NULL, loggerThreadRun, (void*) &memory);
 	iret5 = pthread_create( &sysStatusTXThread, NULL, sysStatusTXThreadRun, (void*) &memory);
 	iret6 = pthread_create( &sensorTXThread, NULL, sensorTXThreadRun, (void*) &memory);
@@ -92,10 +94,18 @@ printf(" SharedMemory\n");
 textcolor(BRIGHT, WHITE, BLACK);
 //printf(" ****************************************************************************\n");
 textcolor(BRIGHT, BLUE, BLACK);
-printf(" Roll:    %.3f\n",memory.getRoll()  );
-printf(" Pitch:   %.3f\n",memory.getPitch() );
-printf(" Yaw:     %.3f\n",memory.getYaw()   );
+printf(" Roll:    %.5f\n",memory.getRoll()  );
+printf(" Pitch:   %.5f\n",memory.getPitch() );
+printf(" Yaw:     %.5f\n",memory.getYaw()   );
 printf(" Sonar1:  %.3f\n",memory.getSonar(SONAR1)); 
+printf(" U1:      %.5f\n",memory.U[0] );
+printf(" U2:      %.5f\n",memory.U[1] );
+printf(" U3:      %.5f\n",memory.U[2]   );
+printf(" U4:      %.5f\n",memory.U[3]); 
+printf(" MDuty1:  %d \n",memory.MotorDuty[0]  );
+printf(" MDuty2:  %d \n",memory.MotorDuty[1] );
+printf(" MDuty3:  %d \n",memory.MotorDuty[2]   );
+printf(" MDuty4:  %d \n",memory.MotorDuty[3]); 
 textcolor(BRIGHT, WHITE, BLACK);
 printf(" ==============================================================================\n");
 }

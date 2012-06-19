@@ -22,6 +22,7 @@ class SharedMemory{
     double adcValues[MAX_OVERO_CHANNEL];		// array containing time t   adc values */
 	
 	//PID Control Algorithm Variables
+	public:
 	float U[4];									// VirtualControl Inputs ( Acquired from TIC2000) */
 	short MotorDuty[4];							// MotorDuties  		 ( Acquired from TIC2000) */
 	

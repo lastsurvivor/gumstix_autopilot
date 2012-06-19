@@ -27,9 +27,13 @@ void *adcThreadRun(void *param)
 	fd = open(adcDevice, O_RDWR | O_NONBLOCK, 0);
 	if (fd < 0) {
 		perror("open");
-		exit(1);
+		printf("ADC Thread couldnt be opened\n");
+		return NULL;
 	}
+	else{
+		printf("ADC Thread has opened ADCport\n");
 	
+
 	ch = -1;
 	avg = 0;
 	machine_read = 0;
@@ -44,7 +48,7 @@ void *adcThreadRun(void *param)
 	}
 
 	close(fd);
-				
+	}			
 }
 
 
@@ -67,6 +71,7 @@ void *serial1ThreadRun(void *param)
 	float roll, pitch, yaw;				//Internal Storage
 	struct termios options;				//Define Serial Port Options
 	fd = open_serial(serial1Device);	//Open Serial Port
+	printf("Serial1 Thread has opened port\n");
 
 	
 	tcgetattr(fd, &options);			/*Configure Serial Port for Usage */
@@ -184,16 +189,23 @@ void *serial1ThreadRun(void *param)
 void *serial2ThreadRun(void *param)
 {
 
+	SharedMemory *mem;
+	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
+
 	struct termios options;
 
 	//Open Serial
 	int fd;
-	if ( argc < 2 ){
-		fd = open_serial("/dev/ttyS0");
-	}
-	else
-		fd = open_serial(argv[1]);
+	fd = open_serial(serial2Device);
 		
+	if (fd < 0) {
+		perror("open");
+		printf("Serial1 Thread couldnt open port\n");
+		
+	}
+	else{
+	printf("Serial1 Thread has opened port\n");
+	
 	//Configure Serial
 	tcgetattr(fd, &options);
 	/* Set the new options for the port... */
@@ -212,9 +224,11 @@ void *serial2ThreadRun(void *param)
 
 	unsigned char byte = 'o';
 	unsigned char len;
-	unsigned char dataBuffer[32];
+	unsigned int numBytes;
+	char dataBuffer[32];
 	unsigned char flagByte1,flagByte2;
 	unsigned short motorDuty[4];
+ 	float roll,pitch, yaw;
 	int i;
 	float U[4];
 
@@ -223,7 +237,7 @@ void *serial2ThreadRun(void *param)
 		while( byte != 's'){
 			read(fd, &byte, 1);
 		}
-		read(fd, &byte, 1);
+		numBytes = read(fd, &byte, 1);
 		if ( byte != 'u')
 			goto search_header;
 
@@ -233,8 +247,8 @@ void *serial2ThreadRun(void *param)
 			printf("Valid Package Start Detected \n");
 		*/
 
-		read(fd, &byte, 1);
-		read(fd, &len, 1);
+		numBytes = read(fd, &byte, 1);
+		numBytes = read(fd, &len, 1);
 
 		/*
 		if ( DEBUG) {
@@ -257,11 +271,16 @@ void *serial2ThreadRun(void *param)
 	        roll = char_to_float( &dataBuffer[0]);
 	        pitch = char_to_float( &dataBuffer[4]);
 	        yaw = char_to_float( &dataBuffer[8]);
-	        printf("roll:%.2f pitch:%.2f yaw: %.2f \n", yaw, pitch, roll);
+	        //printf("roll:%.2f pitch:%.2f yaw: %.2f \n", yaw, pitch, roll);
+		mem->setRoll(roll);
+		mem->setPitch(pitch);
+		mem->setYaw(yaw);
 		}
 		else if ( byte == TI_PID_DATA){
+			/*
 			for(i = 0; i < len; i++)
 				printf("[%x] ", dataBuffer[i]);
+			*/
 
 			motorDuty[0] = char_to_short( &dataBuffer[0]);
 			motorDuty[1] = char_to_short( &dataBuffer[2]);
@@ -271,9 +290,16 @@ void *serial2ThreadRun(void *param)
 			U[1] = char_to_float( &dataBuffer[12]);
 			U[2] = char_to_float( &dataBuffer[16]);
 			U[3] = char_to_float( &dataBuffer[20]);
-
-			printf("MotorDuties: %d %d %d %d \n", motorDuty[0], motorDuty[1], motorDuty[2], motorDuty[3]);
-			printf("Virtual   U: %f %f %f %f \n", U[0], U[1], U[2], U[3]);
+			mem->MotorDuty[0] = motorDuty[0];
+			mem->MotorDuty[1] = motorDuty[1];
+			mem->MotorDuty[2] = motorDuty[2];
+			mem->MotorDuty[3] = motorDuty[3];
+			mem->U[0] = U[0];
+			mem->U[1] = U[1];
+			mem->U[2] = U[2];
+			mem->U[3] = U[3];
+			//printf("MotorDuties: %d %d %d %d \n", motorDuty[0], motorDuty[1], motorDuty[2], motorDuty[3]);
+			//printf("Virtual   U: %f %f %f %f \n", U[0], U[1], U[2], U[3]);
 		}
 		else{
 			//Other package types not supported for now
@@ -285,6 +311,8 @@ void *serial2ThreadRun(void *param)
 		usleep(serialSleepPeriod);
 		//system("clear");
 
+
+	}
 
 	}
 }
