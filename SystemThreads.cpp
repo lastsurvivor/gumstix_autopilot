@@ -188,7 +188,7 @@ void *serial1ThreadRun(void *param)
 }
 void *serial2ThreadRun(void *param)
 {
-
+	bool SERIAL2_DEBUG = false;
 	SharedMemory *mem;
 	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
 
@@ -200,11 +200,11 @@ void *serial2ThreadRun(void *param)
 		
 	if (fd < 0) {
 		perror("open");
-		printf("Serial1 Thread couldnt open port\n");
+		printf("Serial2 Thread couldnt open port\n");
 		
 	}
 	else{
-	printf("Serial1 Thread has opened port\n");
+	printf("Serial2 Thread has opened port\n");
 	
 	//Configure Serial
 	tcgetattr(fd, &options);
@@ -255,6 +255,14 @@ void *serial2ThreadRun(void *param)
 		printf("Type: %d\n", (unsigned int)byte);
 		printf("Len: %d\n", (unsigned int)len);
 		}*/
+		
+		if ( byte != TI_SENSOR_DATA && byte != TI_PID_DATA ){
+			if ( SERIAL2_DEBUG ){
+				 printf("Warning there is a package type which is not supported!\n");
+			 }
+		 	goto search_header;
+		 }
+		 			
 
 		/*Read all data to dataBuffer */
 		int byteNum, readBytes = 0, requiredBytes = len;

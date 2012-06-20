@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>			//Utility Library
 #include <pthread.h>		//Thread Library
+#include <cmath>
 #include "SystemStatus.h"
 #include "SystemConfig.h"
 #include "SharedMemory.h"
@@ -94,9 +95,9 @@ printf(" SharedMemory\n");
 textcolor(BRIGHT, WHITE, BLACK);
 //printf(" ****************************************************************************\n");
 textcolor(BRIGHT, BLUE, BLACK);
-printf(" Roll:    %.5f\n",memory.getRoll()  );
-printf(" Pitch:   %.5f\n",memory.getPitch() );
-printf(" Yaw:     %.5f\n",memory.getYaw()   );
+printf(" Roll:    %.5f %.2f \n",memory.getRoll(), memory.getRoll() * (180/M_PI)  );
+printf(" Pitch:   %.5f %.2f \n",memory.getPitch(), memory.getPitch() * ( 180/M_PI )  );
+printf(" Yaw:     %.5f %.2f \n",memory.getYaw() , memory.getYaw() * (180 / M_PI )  );
 printf(" Sonar1:  %.3f\n",memory.getSonar(SONAR1)); 
 printf(" U1:      %.5f\n",memory.U[0] );
 printf(" U2:      %.5f\n",memory.U[1] );
