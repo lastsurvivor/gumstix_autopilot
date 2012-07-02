@@ -31,7 +31,7 @@ static const char *adcDevice     = "/dev/twl4030-madc";	// Gumstix ADC Access De
  */
 static const int adcSleepPeriod = 50;			// Gumstix ADC Serial read period in milliseconds. Default is 50
 static const int serialSleepPeriod = 5;		// Gumstix Serial port read period in milliseconds. Default is 10
-static const int loggerSleepPeriod = 2000;		// Gumstix logger thread sleep in milliseconds. Default is 2000
+static const int loggerSleepPeriod = 100;		// Gumstix logger thread sleep in milliseconds. Default is 2000
 static const int sysStatusSleepPeriod = 1000;	// Gumstix system state communication thread sleep in ms. Default is 1000
 static const int sensorTXSleepPeriod = 100;		// Gumstix system state communication thread sleep in ms. Default is 100
 
@@ -49,7 +49,7 @@ static double dt = 0.06; 								/* dt of LowPassFilter for Sonar Sensor */
 static double RC = 0.06; 								/* time constant of LowPassFilter of Sonar Sensor */
 
 /*Network Configuration */
-static const char *baseStationIP = "192.168.1.250";   	/* Ground Station's IPV4 Addres , default: "192.168.1.250" */
+static const char *baseStationIP = "127.0.0.1";   	/* Ground Station's IPV4 Addres , default: "192.168.1.250" */
 static const int connectTXPort1  = 14553;   	  		/* TX port for system state comm , default: 14553 */	
 static const int connectRXPort1  = 14550;   	  		/* RX port for system state comm , default: 14550 */
 static const int connectTXPort2  = 14554;   	  		/* TX port for sensor comm , default: 14554 */	

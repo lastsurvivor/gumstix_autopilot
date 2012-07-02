@@ -17,7 +17,6 @@ class SharedMemory{
 	private:
 	float imuRoll;
 	float imuPitch;
-	float imuYaw;
     double adcValues_old[MAX_OVERO_CHANNEL];	/* array containing time t-1 adc values */
     double adcValues[MAX_OVERO_CHANNEL];		// array containing time t   adc values */
 	
@@ -25,6 +24,10 @@ class SharedMemory{
 	public:
 	float U[4];									// VirtualControl Inputs ( Acquired from TIC2000) */
 	short MotorDuty[4];							// MotorDuties  		 ( Acquired from TIC2000) */
+	unsigned int PulseDuty[4];							// RF-Receiver Thrust,Roll,Pitch,Yaw Duty Values  */
+	float imuYaw;
+	float imuRollRate;
+	float imuPitchRate;
 	
 	public:
 	inline float getRoll(){ return imuRoll; }

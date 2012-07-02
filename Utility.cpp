@@ -110,3 +110,24 @@ int char_to_int( char* cs)
 {
     return *(int*)cs;
 }
+int char_to_uint( char* cs)
+{
+    return *(unsigned int*)cs;
+}
+
+void short_to_char(short *src, char *dst)
+{
+	dst[0] = ((char*)(src))[0];
+	dst[1] = ((char*)(src))[1];
+  
+}
+
+void float_to_char(float *src, char *dst)
+{
+	dst[0] = ((char*)(src))[0];
+	dst[1] = ((char*)(src))[1];
+	dst[2] = ((char*)(src))[2];
+	dst[3] = ((char*)(src))[3];
+	
+  
+}

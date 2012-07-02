@@ -56,4 +56,7 @@ void textcolor(int attr, int fg, int bg);		//Change Text Color of Console
 float char_to_float( char* cs);
 short char_to_short( char* cs);
 int char_to_int( char* cs);
+int char_to_uint( char* cs);
+void short_to_char(short *src, char *dst);
+void float_to_char(float *src, char *dst);
 #endif

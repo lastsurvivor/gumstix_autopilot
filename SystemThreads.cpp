@@ -228,14 +228,16 @@ void *serial2ThreadRun(void *param)
 	char dataBuffer[32];
 	unsigned char flagByte1,flagByte2;
 	unsigned short motorDuty[4];
+	unsigned int pulseDuty[4];
  	float roll,pitch, yaw;
+ 	float rollRate, pitchRate;
 	int i;
 	float U[4];
 
 	while(1){
 		search_header:
 		while( byte != 's'){
-			read(fd, &byte, 1);
+			numBytes = read(fd, &byte, 1);
 		}
 		numBytes = read(fd, &byte, 1);
 		if ( byte != 'u')
@@ -256,9 +258,9 @@ void *serial2ThreadRun(void *param)
 		printf("Len: %d\n", (unsigned int)len);
 		}*/
 		
-		if ( byte != TI_SENSOR_DATA && byte != TI_PID_DATA ){
+		if ( byte != TI_SENSOR_DATA && byte != TI_PID_DATA && byte != TI_RATE_DATA && byte != TI_PULSE_DATA ){
 			if ( SERIAL2_DEBUG ){
-				 printf("Warning there is a package type which is not supported!\n");
+				 printf("Warning there is a package type which is not supported : %x !\n", byte);
 			 }
 		 	goto search_header;
 		 }
@@ -283,6 +285,7 @@ void *serial2ThreadRun(void *param)
 		mem->setRoll(roll);
 		mem->setPitch(pitch);
 		mem->setYaw(yaw);
+		if ( SERIAL2_DEBUG )printf("IMU DATA CAME\n");
 		}
 		else if ( byte == TI_PID_DATA){
 			/*
@@ -308,7 +311,24 @@ void *serial2ThreadRun(void *param)
 			mem->U[3] = U[3];
 			//printf("MotorDuties: %d %d %d %d \n", motorDuty[0], motorDuty[1], motorDuty[2], motorDuty[3]);
 			//printf("Virtual   U: %f %f %f %f \n", U[0], U[1], U[2], U[3]);
+			if ( SERIAL2_DEBUG )printf("PID DATA CAME\n");
 		}
+		else if ( byte == TI_PULSE_DATA ){
+			pulseDuty[0] = char_to_uint( &dataBuffer[0]);
+			pulseDuty[1] = char_to_uint( &dataBuffer[4]);
+			pulseDuty[2] = char_to_uint( &dataBuffer[8]);
+			mem->PulseDuty[0] = pulseDuty[0];
+			mem->PulseDuty[1] = pulseDuty[1];
+			mem->PulseDuty[2] = pulseDuty[2];			
+			if ( SERIAL2_DEBUG )printf("PULSE PACKAGE CAME : %d %d %d %d\n", pulseDuty[0], pulseDuty[1], pulseDuty[2], pulseDuty[3]);
+		}
+		else if ( byte == TI_RATE_DATA ){
+			rollRate = char_to_float( &dataBuffer[0]);
+			pitchRate = char_to_float( &dataBuffer[4]);
+			mem->imuRollRate = rollRate;
+			mem->imuPitchRate = pitchRate;		
+			if ( SERIAL2_DEBUG )printf("RATE PACKAGE CAME : %f %f\n", rollRate, pitchRate);
+		}		
 		else{
 			//Other package types not supported for now
 			continue;
@@ -379,9 +399,11 @@ void *loggerThreadRun(void *param)
 		datePtr = getDateString();
 	
 		//Append shared memory to logfile
-		fprintf(logFile, "ROLL: %.2f PITCH: %.2f YAW:%.3f SONAR1:%.2f ", mem->getRoll(), mem->getPitch(), mem->getYaw(), mem->getSonar(SONAR1));
-		fprintf(logFile, "U1: %.2f U2: %.2f U3: %.2f U4: %.2f ", mem->getU1(), mem->getU2(), mem->getU3(), mem->getU4());
-		fprintf(logFile, "Duty1: %d Duty2: %d Duty3: %d Duty4: %d ", mem->getDuty1(), mem->getDuty2(), mem->getDuty3(), mem->getDuty4());
+		fprintf(logFile, "ROLL: %.5f PITCH: %.5f YAW:%.5f SONAR1:%.2f ", mem->getRoll(), mem->getPitch(), mem->getYaw(), mem->getSonar(SONAR1));
+		fprintf(logFile, "ROLLRATE: %.5f PITCHRATE: %.5f ", mem->imuRollRate, mem->imuPitchRate);
+		fprintf(logFile, "U1: %.5f U2: %.5f U3: %.5f U4: %.5f ", mem->getU1(), mem->getU2(), mem->getU3(), mem->getU4());
+		fprintf(logFile, "MDuty1: %d MDuty2: %d MDuty3: %d MDuty4: %d ", mem->getDuty1(), mem->getDuty2(), mem->getDuty3(), mem->getDuty4());
+		fprintf(logFile, "ChDuty1: %d ChDuty2: %d ChDuty3: %d ChDuty4: %d ", mem->PulseDuty[0], mem->PulseDuty[1], mem->PulseDuty[2], mem->PulseDuty[3]); 
 		
 		fprintf(logFile, " TIME:%s\n", datePtr);
 		//Append systemStatus to logfile
@@ -583,9 +605,9 @@ void *sensorTXThreadRun(void *param)
      
     		/* Send attitude */
     		//Convert roll,pitch,yaw to radian
-    		float rollRad = (mem->getRoll() * PI ) / 180;
-    		float pitchRad = (mem->getPitch() * PI ) / 180;
-    		float yawRad = (mem->getYaw() * PI ) / 180;
+    		float rollRad = mem->getRoll() ;
+    		float pitchRad = mem->getPitch() ;
+    		float yawRad = mem->getYaw() ;
     		mavlink_msg_attitude_pack(1, MAV_COMP_ID_IMU, &msg, microsSinceEpoch(), rollRad, pitchRad, yawRad, 0, 0, 0);
     		len = mavlink_msg_to_send_buffer(buf, &msg);
     		bytes_sent = sendto(sock, buf, len, 0, (struct sockaddr*)&gcAddr, sizeof(struct sockaddr_in));    		  							  
