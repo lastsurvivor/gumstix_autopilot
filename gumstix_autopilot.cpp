@@ -66,6 +66,10 @@ void init_sharedMemory()
 	memory.setRoll(0);
 	memory.setPitch(0);
 	memory.setYaw(0);
+	memory.U[1] = 0;
+	memory.U[2] = 0;
+	memory.U[3] = 0;
+	memory.U[4] = 0;
 }
 
 void main_loop()
@@ -100,7 +104,9 @@ printf(" RollRate: %10.5f \n", memory.imuRollRate );
 printf(" Pitch:   %11.5f %5.2f ",memory.getPitch(), memory.getPitch() * ( 180/M_PI )  );
 printf(" PitchRate: %10.5f \n", memory.imuPitchRate );
 printf(" Yaw:     %5.5f %5.2f \n",memory.getYaw() , memory.getYaw() * (180 / M_PI )  );
-printf(" Sonar1:  %9.3f\n",memory.getSonar(SONAR1)); 
+printf(" YawRate:     %11.5f \n",memory.imuYawRate * (180 / M_PI )  );
+printf(" Sonar:  %9.3f\n",memory.getSonar1());
+printf(" SonarVelocity:  %9.3f\n",memory.getSonar1Velocity()); 
 printf(" U1:      %7.5f\n",memory.U[0] );
 printf(" U2:      %7.5f\n",memory.U[1] );
 printf(" U3:      %7.5f\n",memory.U[2]   );

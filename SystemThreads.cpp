@@ -229,8 +229,9 @@ void *serial2ThreadRun(void *param)
 	unsigned char flagByte1,flagByte2;
 	unsigned short motorDuty[4];
 	unsigned int pulseDuty[4];
- 	float roll,pitch, yaw;
- 	float rollRate, pitchRate;
+ 	float roll,pitch, yaw, rawYaw;
+ 	float rollRate, pitchRate, yawRate;
+ 	float sonar, sonarVelocity;
 	int i;
 	float U[4];
 
@@ -258,7 +259,7 @@ void *serial2ThreadRun(void *param)
 		printf("Len: %d\n", (unsigned int)len);
 		}*/
 		
-		if ( byte != TI_SENSOR_DATA && byte != TI_PID_DATA && byte != TI_RATE_DATA && byte != TI_PULSE_DATA ){
+		if ( byte != TI_SENSOR_DATA && byte != TI_PID_DATA && byte != TI_RATE_DATA && byte != TI_PULSE_DATA && byte != TI_SONAR_DATA ){
 			if ( SERIAL2_DEBUG ){
 				 printf("Warning there is a package type which is not supported : %x !\n", byte);
 			 }
@@ -325,9 +326,18 @@ void *serial2ThreadRun(void *param)
 		else if ( byte == TI_RATE_DATA ){
 			rollRate = char_to_float( &dataBuffer[0]);
 			pitchRate = char_to_float( &dataBuffer[4]);
+			yawRate = char_to_float( &dataBuffer[8] );
 			mem->imuRollRate = rollRate;
 			mem->imuPitchRate = pitchRate;		
-			if ( SERIAL2_DEBUG )printf("RATE PACKAGE CAME : %f %f\n", rollRate, pitchRate);
+			mem->imuYawRate = yawRate;
+			if ( SERIAL2_DEBUG )printf("RATE PACKAGE CAME : %f %f %f \n", rollRate, pitchRate, yawRate);
+		}
+		else if(byte == TI_SONAR_DATA){
+	        sonar = char_to_float( &dataBuffer[0]);
+			sonarVelocity = char_to_float( &dataBuffer[4]);
+			mem->sonar = sonar;
+			mem->sonarVelocity = sonarVelocity;
+			if ( SERIAL2_DEBUG )printf("SONAR PACKAGE CAME : %f %f \n", sonar, sonarVelocity);
 		}		
 		else{
 			//Other package types not supported for now
@@ -399,7 +409,7 @@ void *loggerThreadRun(void *param)
 		datePtr = getDateString();
 	
 		//Append shared memory to logfile
-		fprintf(logFile, "ROLL: %.5f PITCH: %.5f YAW:%.5f SONAR1:%.2f ", mem->getRoll(), mem->getPitch(), mem->getYaw(), mem->getSonar(SONAR1));
+		fprintf(logFile, "ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  SONAR1VELOCITY: %.5f ", mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getSonar1Velocity());
 		fprintf(logFile, "ROLLRATE: %.5f PITCHRATE: %.5f ", mem->imuRollRate, mem->imuPitchRate);
 		fprintf(logFile, "U1: %.5f U2: %.5f U3: %.5f U4: %.5f ", mem->getU1(), mem->getU2(), mem->getU3(), mem->getU4());
 		fprintf(logFile, "MDuty1: %d MDuty2: %d MDuty3: %d MDuty4: %d ", mem->getDuty1(), mem->getDuty2(), mem->getDuty3(), mem->getDuty4());

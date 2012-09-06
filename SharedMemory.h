@@ -26,14 +26,24 @@ class SharedMemory{
 	short MotorDuty[4];							// MotorDuties  		 ( Acquired from TIC2000) */
 	unsigned int PulseDuty[4];							// RF-Receiver Thrust,Roll,Pitch,Yaw Duty Values  */
 	float imuYaw;
+	float imuYawRate;
 	float imuRollRate;
 	float imuPitchRate;
+	
+	//Sonar Data
+	float sonarData;
+	float sonarRate;
+	
+	float sonar;
+	float sonarVelocity;
 	
 	public:
 	inline float getRoll(){ return imuRoll; }
 	inline float getPitch() {return imuPitch; }
 	inline float getYaw(){ return imuYaw; }
 	inline float getSonar(int sonarId){ return adcValues[sonarId]; }
+	inline float getSonar1(){ return sonar; }
+	inline float getSonar1Velocity(){ return sonarVelocity; }
 	inline float getU1(){ return U[0]; }
 	inline float getU2(){ return U[1]; }
 	inline float getU3(){ return U[2]; }
