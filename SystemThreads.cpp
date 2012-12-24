@@ -4,6 +4,10 @@
 #include "ch6dm_linux.h"					// IMU Operations
 #include "adcAccess.h"						// ADC Operations
 #include "tiC2000.h"						// Microcontroller Communication
+// OpenCV Libraries
+
+#include <cv.h>
+#include <highgui.h>
 
 
 /*******************************************************************************
@@ -229,9 +233,10 @@ void *serial2ThreadRun(void *param)
 	unsigned char flagByte1,flagByte2;
 	unsigned short motorDuty[4];
 	unsigned int pulseDuty[4];
- 	float roll,pitch, yaw, rawYaw;
+ 	float roll,pitch, yaw, rawYaw, rawSonar;
  	float rollRate, pitchRate, yawRate;
- 	float sonar, sonarVelocity;
+ 	float sonar, sonarVelocity, desiredAltitude = 0;
+ 	short hoverMode, RFflightAllow, flightAllow;
 	int i;
 	float U[4];
 
@@ -259,7 +264,7 @@ void *serial2ThreadRun(void *param)
 		printf("Len: %d\n", (unsigned int)len);
 		}*/
 		
-		if ( byte != TI_SENSOR_DATA && byte != TI_PID_DATA && byte != TI_RATE_DATA && byte != TI_PULSE_DATA && byte != TI_SONAR_DATA ){
+		if ( byte != TI_SENSOR_DATA && byte != TI_PID_DATA && byte != TI_RATE_DATA && byte != TI_PULSE_DATA && byte != TI_SONAR_DATA && byte != TI_PILOT_DATA){
 			if ( SERIAL2_DEBUG ){
 				 printf("Warning there is a package type which is not supported : %x !\n", byte);
 			 }
@@ -335,10 +340,23 @@ void *serial2ThreadRun(void *param)
 		else if(byte == TI_SONAR_DATA){
 	        sonar = char_to_float( &dataBuffer[0]);
 			sonarVelocity = char_to_float( &dataBuffer[4]);
-			mem->sonar = sonar;
+			desiredAltitude = char_to_float( &dataBuffer[8]);
+			mem->sonar = sonar;				
 			mem->sonarVelocity = sonarVelocity;
-			if ( SERIAL2_DEBUG )printf("SONAR PACKAGE CAME : %f %f \n", sonar, sonarVelocity);
-		}		
+			mem->desiredAltitude = desiredAltitude;
+			if ( SERIAL2_DEBUG )printf("SONAR PACKAGE CAME : %f %f %f \n", sonar, sonarVelocity, desiredAltitude);
+		}
+		else if(byte == TI_PILOT_DATA){
+	        hoverMode = char_to_short( &dataBuffer[0]);
+			RFflightAllow = char_to_short( &dataBuffer[2]);
+			flightAllow = char_to_short( &dataBuffer[4]);
+			rawSonar = char_to_float( &dataBuffer[6]);
+			mem->hoverMode = hoverMode;		
+			mem->flightAllow = flightAllow;
+			mem->RFflightAllow = RFflightAllow;
+			mem->rawSonar = rawSonar;
+			if ( SERIAL2_DEBUG )printf("PILOT PACKAGE CAME : %d %d %d %f \n", mem->hoverMode, mem->RFflightAllow, mem->flightAllow, mem->rawSonar);
+		}			
 		else{
 			//Other package types not supported for now
 			continue;
@@ -409,12 +427,12 @@ void *loggerThreadRun(void *param)
 		datePtr = getDateString();
 	
 		//Append shared memory to logfile
-		fprintf(logFile, "ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  SONAR1VELOCITY: %.5f ", mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getSonar1Velocity());
+		fprintf(logFile, "ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  SONAR1VELOCITY: %.5f RAWSONAR: %.5f ", mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getSonar1Velocity(), mem->getRawSonar());
 		fprintf(logFile, "ROLLRATE: %.5f PITCHRATE: %.5f ", mem->imuRollRate, mem->imuPitchRate);
 		fprintf(logFile, "U1: %.5f U2: %.5f U3: %.5f U4: %.5f ", mem->getU1(), mem->getU2(), mem->getU3(), mem->getU4());
 		fprintf(logFile, "MDuty1: %d MDuty2: %d MDuty3: %d MDuty4: %d ", mem->getDuty1(), mem->getDuty2(), mem->getDuty3(), mem->getDuty4());
 		fprintf(logFile, "ChDuty1: %d ChDuty2: %d ChDuty3: %d ChDuty4: %d ", mem->PulseDuty[0], mem->PulseDuty[1], mem->PulseDuty[2], mem->PulseDuty[3]); 
-		
+		fprintf(logFile, "DesiredAltitude: %.2f HoverMode: %f flightAllow: %f ", mem->desiredAltitude, mem->getHoverMode(), mem->getFlightAllow());
 		fprintf(logFile, " TIME:%s\n", datePtr);
 		//Append systemStatus to logfile
 		
@@ -482,6 +500,11 @@ void *sysStatusTXThreadRun(void *param)
     	gcAddr.sin_addr.s_addr = inet_addr(target_ip);
     	gcAddr.sin_port = htons(connectRXPort1);    	
     	
+    	for ( int i = 0; i < 6; i++){
+    		position[i] = 0;
+    	}
+    	position[2] = 5;
+    	
     	while(1 == 1){
     		/*Send Heartbeat */
     		mavlink_msg_heartbeat_pack(1, 200, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, MAV_MODE_MANUAL_ARMED, 0, MAV_STATE_ACTIVE);
@@ -507,7 +530,9 @@ void *sysStatusTXThreadRun(void *param)
     		len = mavlink_msg_to_send_buffer(buf, &msg);
     		bytes_sent = sendto(sock, buf, len, 0, (struct sockaddr*)&gcAddr, sizeof (struct sockaddr_in));
 			/* Send global position */
-			mavlink_msg_global_position_int_pack(255, 200, &msg, 0, 408931000, 293750000, 550000,550000, 0,0,0,0);
+			//mavlink_msg_global_position_int_pack(255, 200, &msg, 0, 408931000, 293750000, 550000,550000, 0,0,0,0);
+/*			
+mavlink_msg_local_position_ned_pack(1 , 200, &msg, microsSinceEpoch(), position[0],position[1],position[2], position[3],position[4],position[5]);
 			len = mavlink_msg_to_send_buffer(buf, &msg);
 			bytes_sent = sendto(sock, buf, len, 0, (struct sockaddr*)&gcAddr, sizeof(struct sockaddr_in));    							  
      		/* Receive from GroundStation */
@@ -607,11 +632,7 @@ void *sensorTXThreadRun(void *param)
     	while(1 == 1){
     		uint64_t currentTime = microsSinceEpoch();
 			/* Send global position */
-			mavlink_msg_global_position_int_pack(1, 200, &msg, 0, 408931000, 293750000, 550000,550000, 0,0,0,0);    	
-    		/* Send Local Position 
-    		mavlink_msg_local_position_ned_pack(1, MAV_COMP_ID_IMU, &msg, currentTime, position[0], position[1], position[2], position[3], position[4], position[5]);
-    		len = mavlink_msg_to_send_buffer(buf, &msg);
-    		bytes_sent = sendto(sock, buf, len, 0, (struct sockaddr*)&gcAddr, sizeof(struct sockaddr_in));*/
+		//	mavlink_msg_global_position_int_pack(1, 200, &msg, 0, 408931000, 293750000, 550000,550000, 0,0,0,0);    	
      
     		/* Send attitude */
     		//Convert roll,pitch,yaw to radian
@@ -621,8 +642,13 @@ void *sensorTXThreadRun(void *param)
     		mavlink_msg_attitude_pack(1, MAV_COMP_ID_IMU, &msg, microsSinceEpoch(), rollRad, pitchRad, yawRad, 0, 0, 0);
     		len = mavlink_msg_to_send_buffer(buf, &msg);
     		bytes_sent = sendto(sock, buf, len, 0, (struct sockaddr*)&gcAddr, sizeof(struct sockaddr_in));    		  							  
+    		/* Send Local Position */
+    		mavlink_msg_local_position_ned_pack(1, MAV_COMP_ID_IMU ,&msg, currentTime, 0.00, 0.00, mem->getSonar1(), position[3], position[4],0);
+    		len = mavlink_msg_to_send_buffer(buf, &msg);
+    		bytes_sent = sendto(sock, buf, len, 0, (struct sockaddr*)&gcAddr, sizeof(struct sockaddr_in));
+    		
      		/* Receive from GroundStation */
-    		memset(buf, 0, BUFFER_LENGTH);
+		memset(buf, 0, BUFFER_LENGTH);
     		recsize = recvfrom(sock, (void *)buf, BUFFER_LENGTH, 0, (struct sockaddr *)&gcAddr, &fromlen);
     		if (recsize > 0)
           	{
@@ -663,4 +689,61 @@ void *sensorTXThreadRun(void *param)
     		usleep(sensorTXSleepPeriod * 1000); // Sleep one second    				
 					   		
     	}
+}
+
+void *cameraThreadRun(void *param)
+{
+		SharedMemory *mem;
+		mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
+
+	int frameNumber = 0;
+	IplImage *img;
+	CvCapture *capture = cvCaptureFromCAM(-1);
+	CvVideoWriter *writer = 0;
+	int exit_key_press = 0;
+	if(capture == NULL)
+	{
+		printf("cvCapture ERROR!!\n");
+	}	
+	int isColor = 1;	
+	//fps is manually set
+	//cvNamedWindow("ibne mali", CV_WINDOW_AUTOSIZE);
+
+	double fps = 10;    	
+
+//	double fps = cvGetCaptureProperty (capture,CV_CAP_PROP_FPS);
+	CvSize size = cvSize((int)cvGetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH),
+		     (int)cvGetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT));
+
+	writer = cvCreateVideoWriter("outputVideo.avi",CV_FOURCC('U', '2', '6', '3'),fps,size,isColor);
+	if (writer == NULL)
+    	{
+        	printf("!!! ERROR: cvCreateVideoWriter\n");
+    	}
+		
+	FILE *logFile = fopen("outputVideoAngles.txt", "w+");
+
+	while(1)
+	{
+		img = cvQueryFrame(capture);
+		if (img == NULL)
+        	{
+        		printf("!!! ERROR: cvQueryFrame\n");
+			break;
+	        }
+		cvWriteFrame(writer,img);
+		//Write current IMU angles to corresponding textfile
+		fprintf(logFile, "IMGFRAME: %d ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  SONAR1VELOCITY: %.5f RAWSONAR: %.5f ",frameNumber, mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getSonar1Velocity(), mem->getRawSonar());
+		frameNumber++;
+			
+		cvWaitKey(20);
+		
+	}
+	fclose(logFile);
+
+	cvReleaseVideoWriter(&writer);
+	cvReleaseCapture(&capture);
+	cvReleaseImage(&img);
+
+
 }

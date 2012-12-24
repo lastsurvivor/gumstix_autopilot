@@ -36,6 +36,18 @@ class SharedMemory{
 	
 	float sonar;
 	float sonarVelocity;
+	float desiredAltitude;
+	float rawSonar;
+	
+	//Pilot Data
+	short hoverMode;
+	short flightAllow;
+	short RFflightAllow;
+	
+	
+	//System State Block
+	public:
+	char isCameraRunning;
 	
 	public:
 	inline float getRoll(){ return imuRoll; }
@@ -44,6 +56,7 @@ class SharedMemory{
 	inline float getSonar(int sonarId){ return adcValues[sonarId]; }
 	inline float getSonar1(){ return sonar; }
 	inline float getSonar1Velocity(){ return sonarVelocity; }
+	inline float getRawSonar(){ return rawSonar;}
 	inline float getU1(){ return U[0]; }
 	inline float getU2(){ return U[1]; }
 	inline float getU3(){ return U[2]; }
@@ -52,6 +65,9 @@ class SharedMemory{
 	inline short getDuty2(){ return MotorDuty[1]; }
 	inline short getDuty3(){ return MotorDuty[2]; }
 	inline short getDuty4(){ return MotorDuty[3]; }
+	inline float getHoverMode(){ return hoverMode; }
+	inline float getFlightAllow(){ return flightAllow; }
+	
 	
 	inline void setRoll(float roll){ imuRoll = roll; }
 	inline void setPitch(float pitch) { imuPitch = pitch; }

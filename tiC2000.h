@@ -21,6 +21,8 @@
 #define TI_PULSE_DATA 0x04
 #define TI_RATE_DATA 0x05
 #define TI_SONAR_DATA 0x06
+#define TI_PILOT_DATA 0x07
+
 #define TI_SET_PID_ROLL_GAIN 0x10
 #define TI_SET_PID_PITCH_GAIN 0x11
 #define TI_SET_PID_YAW_GAIN 0x12

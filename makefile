@@ -1,7 +1,7 @@
 #
-# Makefile for 'autoPilot'.
+# Makefile for 'autoPilot1.2'.
 #
-# Type 'make' or 'make autoPilot' to create the binary.
+# Type 'make' or 'make autoPilot1.2' to create the binary.
 # Type 'make clean' or 'make clear' to delete all temporaries.
 # Type 'make run' to execute the binary.
 # Type 'make debug' to debug the binary using gdb(1).
@@ -9,16 +9,16 @@
 
 # build target specs
 CC = g++
-CFLAGS = -O3 
+CFLAGS = -O3 -I/usr/local/include/opencv -I/usr/local/include
 OUT_DIR = release
-LIBS = -lpthread
+LIBS = -lpthread -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann
 
 # first target entry is the target invoked when typing 'make'
-default: autoPilot
+default: autoPilot1.2
 
-autoPilot: $(OUT_DIR)/ch6dm_linux.c.o $(OUT_DIR)/adcAccess.cpp.o $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o
-	@echo -n 'Linking autoPilot... '
-	@$(CC) $(CFLAGS) -o autoPilot $(OUT_DIR)/ch6dm_linux.c.o $(OUT_DIR)/adcAccess.cpp.o $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o $(LIBS)
+autoPilot1.2: $(OUT_DIR)/ch6dm_linux.c.o $(OUT_DIR)/adcAccess.cpp.o $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o
+	@echo -n 'Linking autoPilot1.2... '
+	@$(CC) $(CFLAGS) -o autoPilot1.2 $(OUT_DIR)/ch6dm_linux.c.o $(OUT_DIR)/adcAccess.cpp.o $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o $(LIBS)
 	@echo Done.
 
 $(OUT_DIR)/ch6dm_linux.c.o: ch6dm_linux.c ch6dm_linux.h SharedMemory.h \
@@ -205,18 +205,18 @@ $(OUT_DIR)/Utility.cpp.o: Utility.cpp Utility.h
 	@echo Done.
 
 run:
-	./autoPilot 
+	./autoPilot1.2 
 
 debug:
-	gdb ./autoPilot
+	gdb ./autoPilot1.2
 
 clean:
 	@echo -n 'Removing all temporary binaries... '
-	@rm -f autoPilot $(OUT_DIR)/*.o
+	@rm -f autoPilot1.2 $(OUT_DIR)/*.o
 	@echo Done.
 
 clear:
 	@echo -n 'Removing all temporary binaries... '
-	@rm -f autoPilot $(OUT_DIR)/*.o
+	@rm -f autoPilot1.2 $(OUT_DIR)/*.o
 	@echo Done.
 

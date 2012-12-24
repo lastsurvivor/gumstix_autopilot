@@ -106,7 +106,9 @@ printf(" PitchRate: %10.5f \n", memory.imuPitchRate );
 printf(" Yaw:     %5.5f %5.2f \n",memory.getYaw() , memory.getYaw() * (180 / M_PI )  );
 printf(" YawRate:     %11.5f \n",memory.imuYawRate * (180 / M_PI )  );
 printf(" Sonar:  %9.3f\n",memory.getSonar1());
+printf(" RawSonar:  %9.3f\n",memory.getRawSonar());
 printf(" SonarVelocity:  %9.3f\n",memory.getSonar1Velocity()); 
+printf(" Des_Altitude :  %9.3f\n",memory.desiredAltitude );
 printf(" U1:      %7.5f\n",memory.U[0] );
 printf(" U2:      %7.5f\n",memory.U[1] );
 printf(" U3:      %7.5f\n",memory.U[2]   );
@@ -119,6 +121,30 @@ printf(" MDuty3:  %15d ",memory.MotorDuty[2]   );
 printf(" ChDuty3:  %7d \n",memory.PulseDuty[2]  );
 printf(" MDuty4:  %15d ",memory.MotorDuty[3]); 
 printf(" ChDuty4:  notSupportedYet \n" );
+printf(" ===============================================\n");
+if ( memory.hoverMode )
+	textcolor(BRIGHT, BLUE, BLACK);
+else
+	textcolor(BRIGHT, YELLOW, BLACK);
+printf(" HoverMode:   %d \n",memory.hoverMode);
+if ( memory.flightAllow )
+	textcolor(BRIGHT, GREEN, BLACK);
+else
+	textcolor(BRIGHT, RED, BLACK);
+printf(" FlightAllow:  %d \n ",memory.flightAllow); 
+if ( memory.RFflightAllow )
+	textcolor(BRIGHT, GREEN, BLACK);
+else
+	textcolor(BRIGHT, RED, BLACK);
+printf(" RFFlightAllow:  %d \n ",memory.RFflightAllow); 
+if ( memory.isCameraRunning ){
+	textcolor(BRIGHT, GREEN, BLACK);
+	printf("Camera: ON");
+}
+else{
+	textcolor(BRIGHT, RED, BLACK);
+	printf("Camera: OFF");
+}
 textcolor(BRIGHT, WHITE, BLACK);
 printf(" ==============================================================================\n");
 }
