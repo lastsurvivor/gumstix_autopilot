@@ -45,7 +45,7 @@ class SharedMemory{
 	short RFflightAllow;
 	
 	
-	//System State Block
+	//System State Block - Gumstix Rules
 	public:
 	char isCameraRunning;
 	

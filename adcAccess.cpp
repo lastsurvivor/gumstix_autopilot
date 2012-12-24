@@ -16,6 +16,7 @@ where a = dt / (RC + dt)
 *******************************************************************************/
 double sonarLowPassFilter(double *yi_1, double *xi, double *dt, double *RC)
 {
+
 	double yi;
 	double a = *dt / (*RC + *dt);
 	yi = *yi_1 + a * (*xi - *yi_1);

@@ -315,8 +315,8 @@ void *serial2ThreadRun(void *param)
 			mem->U[1] = U[1];
 			mem->U[2] = U[2];
 			mem->U[3] = U[3];
-			//printf("MotorDuties: %d %d %d %d \n", motorDuty[0], motorDuty[1], motorDuty[2], motorDuty[3]);
-			//printf("Virtual   U: %f %f %f %f \n", U[0], U[1], U[2], U[3]);
+			printf("MotorDuties: %d %d %d %d \n", motorDuty[0], motorDuty[1], motorDuty[2], motorDuty[3]);
+			printf("Virtual   U: %f %f %f %f \n", U[0], U[1], U[2], U[3]);
 			if ( SERIAL2_DEBUG )printf("PID DATA CAME\n");
 		}
 		else if ( byte == TI_PULSE_DATA ){
@@ -721,10 +721,12 @@ void *cameraThreadRun(void *param)
         	printf("!!! ERROR: cvCreateVideoWriter\n");
     	}
 		
-	FILE *logFile = fopen("outputVideoAngles.txt", "w+");
 
+	FILE *logFile = fopen("outputVideoAngles.txt", "w+");
+	fclose(logFile);
 	while(1)
 	{
+		FILE *logFile = fopen("outputVideo.txt", "a+");
 		img = cvQueryFrame(capture);
 		if (img == NULL)
         	{
@@ -736,10 +738,10 @@ void *cameraThreadRun(void *param)
 		fprintf(logFile, "IMGFRAME: %d ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  SONAR1VELOCITY: %.5f RAWSONAR: %.5f ",frameNumber, mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getSonar1Velocity(), mem->getRawSonar());
 		frameNumber++;
 			
-		cvWaitKey(20);
+		usleep(sysStatusSleepPeriod * 25); // Sleep one second
+		fclose(logFile);
 		
 	}
-	fclose(logFile);
 
 	cvReleaseVideoWriter(&writer);
 	cvReleaseCapture(&capture);

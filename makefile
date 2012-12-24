@@ -9,7 +9,7 @@
 
 # build target specs
 CC = g++
-CFLAGS = -O3 -I/usr/local/include/opencv -I/usr/local/include
+CFLAGS = -O3 -I/usr/local/include/opencv -I/usr/local/include -I/usr/include/opencv
 OUT_DIR = release
 LIBS = -lpthread -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann
 

@@ -25,6 +25,7 @@ pthread_t serial2Thread;			// Responsible for copying Serial2 input to SharedMem
 pthread_t loggerThread;			
 pthread_t sysStatusTXThread;		// Responsible for transmitting SystemStatus to remote
 pthread_t sensorTXThread;			// Responsible for transmitting SharedMemory to remote
+pthread_t cameraThread;			// Responsible for transmitting SharedMemory to remote
 
 /* System Function Declarations */
 void init_sharedMemory();			// Initializes shared memory and its content
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
 
 void init_threads()
 {
-	int  iret1, iret2, iret3, iret4, iret5, iret6;
+	int  iret1, iret2, iret3, iret4, iret5, iret6, iret7;
 	/* Create independent threads each of which will execute function */
 	iret1 = pthread_create( &adcThread, NULL, adcThreadRun, (void*) &memory);
 	//iret2 = pthread_create( &serial1Thread, NULL, serial1ThreadRun, (void*) &memory);
@@ -58,6 +59,7 @@ void init_threads()
 	iret4 = pthread_create( &loggerThread, NULL, loggerThreadRun, (void*) &memory);
 	iret5 = pthread_create( &sysStatusTXThread, NULL, sysStatusTXThreadRun, (void*) &memory);
 	iret6 = pthread_create( &sensorTXThread, NULL, sensorTXThreadRun, (void*) &memory);
+	iret7 = pthread_create( &cameraThread, NULL, cameraThreadRun, (void*) &memory);
 }
 
 void init_sharedMemory()
@@ -70,6 +72,7 @@ void init_sharedMemory()
 	memory.U[2] = 0;
 	memory.U[3] = 0;
 	memory.U[4] = 0;
+	memory.isCameraRunning = 1;
 }
 
 void main_loop()

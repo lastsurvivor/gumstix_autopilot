@@ -23,5 +23,7 @@ namespace SystemStatus{
 	static bool serialResponse;			// Set to true on serial data transmission
 	static bool adcResponse;			// Set to true on adc    data transmission
 	static char curAlgoName[255];		// Stores currently running algorithm on Gumstix
+
+
 };
 #endif
