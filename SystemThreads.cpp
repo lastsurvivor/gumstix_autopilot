@@ -693,8 +693,9 @@ void *sensorTXThreadRun(void *param)
 
 void *cameraThreadRun(void *param)
 {
-		SharedMemory *mem;
-		mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
+	SharedMemory *mem;
+	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
+	mem->isCameraRunning = 1;
 
 	int frameNumber = 0;
 	IplImage *img;

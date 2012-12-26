@@ -59,7 +59,7 @@ void init_threads()
 	iret4 = pthread_create( &loggerThread, NULL, loggerThreadRun, (void*) &memory);
 	iret5 = pthread_create( &sysStatusTXThread, NULL, sysStatusTXThreadRun, (void*) &memory);
 	iret6 = pthread_create( &sensorTXThread, NULL, sensorTXThreadRun, (void*) &memory);
-	iret7 = pthread_create( &cameraThread, NULL, cameraThreadRun, (void*) &memory);
+	//iret7 = pthread_create( &cameraThread, NULL, cameraThreadRun, (void*) &memory);
 }
 
 void init_sharedMemory()
@@ -72,7 +72,7 @@ void init_sharedMemory()
 	memory.U[2] = 0;
 	memory.U[3] = 0;
 	memory.U[4] = 0;
-	memory.isCameraRunning = 1;
+	memory.isCameraRunning = 0;
 }
 
 void main_loop()
@@ -98,56 +98,41 @@ textcolor(BRIGHT, GREEN, BLACK); printf( "%s",getDateString() ); textcolor(BRIGH
 printf(" ==============================================================================\n");
 
 textcolor(BRIGHT, MAGENTA, BLACK);
-printf(" SharedMemory\n"); 
+printf(" SharedMemory\t\t\t\t\t\t"); printf(" System State\n"); 
 textcolor(BRIGHT, WHITE, BLACK);
 //printf(" ****************************************************************************\n");
 textcolor(BRIGHT, BLUE, BLACK);
-printf(" Roll:    %10.5f %5.2f  ",memory.getRoll(), memory.getRoll() * (180/M_PI)  );
-printf(" RollRate: %10.5f \n", memory.imuRollRate );
-printf(" Pitch:   %11.5f %5.2f ",memory.getPitch(), memory.getPitch() * ( 180/M_PI )  );
-printf(" PitchRate: %10.5f \n", memory.imuPitchRate );
-printf(" Yaw:     %5.5f %5.2f \n",memory.getYaw() , memory.getYaw() * (180 / M_PI )  );
-printf(" YawRate:     %11.5f \n",memory.imuYawRate * (180 / M_PI )  );
-printf(" Sonar:  %9.3f\n",memory.getSonar1());
-printf(" RawSonar:  %9.3f\n",memory.getRawSonar());
+printf(" Roll:   %10.3f %3.2f \t",memory.getRoll(), memory.getRoll() * (180/M_PI)  ); printf(" RollRate:  %10.3f \t", memory.imuRollRate );
+
+memory.hoverMode == 1 ? textcolor(BRIGHT, BLUE, BLACK) : textcolor(BRIGHT, YELLOW, BLACK);     //Set color
+printf(" HoverMode:      %s \n",memory.hoverMode == 1 ? "ON" : "OFF"); 
+textcolor(BRIGHT, BLUE, BLACK);
+
+printf(" Pitch:  %10.3f %3.2f \t",memory.getPitch(), memory.getPitch() * ( 180/M_PI )  ); printf(" PitchRate: %10.3f \t", memory.imuPitchRate );
+
+memory.flightAllow == 1 ? textcolor(BRIGHT, GREEN, BLACK) : textcolor(BRIGHT, RED, BLACK);     //Set color
+printf(" FlightAllow:    %s \n",memory.flightAllow == 1 ? "ON" : "OFF"); 
+textcolor(BRIGHT, BLUE, BLACK);
+
+printf(" Yaw:    %10.3f %3.2f \t",memory.getYaw() , memory.getYaw() * (180 / M_PI )  ); printf(" YawRate:   %10.3f \t",memory.imuYawRate * (180 / M_PI )  );
+
+memory.RFflightAllow == 1 ? textcolor(BRIGHT, GREEN, BLACK) : textcolor(BRIGHT, RED, BLACK);     //Set color
+printf(" RFFlightAllow:  %s \n",memory.RFflightAllow == 1 ? "ON" : "OFF"); 
+textcolor(BRIGHT, BLUE, BLACK);
+
+printf(" Sonar:  %10.3f \t\t",memory.getSonar1()); printf(" RawSonar:  %10.3f \t",memory.getRawSonar());
+
+memory.isCameraRunning == 1 ? textcolor(BRIGHT, GREEN, BLACK) : textcolor(BRIGHT, RED, BLACK); //Set color
+printf(" Camera:  	 %s \n",memory.isCameraRunning == 1 ? "ON" : "OFF"); 	
+textcolor(BRIGHT, BLUE, BLACK);
+
 printf(" SonarVelocity:  %9.3f\n",memory.getSonar1Velocity()); 
 printf(" Des_Altitude :  %9.3f\n",memory.desiredAltitude );
-printf(" U1:      %7.5f\n",memory.U[0] );
-printf(" U2:      %7.5f\n",memory.U[1] );
-printf(" U3:      %7.5f\n",memory.U[2]   );
-printf(" U4:      %7.5f\n",memory.U[3]); 
-printf(" MDuty1:  %15d ",memory.MotorDuty[0]  );
-printf(" ChDuty1:  %7d \n",memory.PulseDuty[0]  );
-printf(" MDuty2:  %15d ",memory.MotorDuty[1] );
-printf(" ChDuty2:  %7d \n",memory.PulseDuty[1]  );
-printf(" MDuty3:  %15d ",memory.MotorDuty[2]   );
-printf(" ChDuty3:  %7d \n",memory.PulseDuty[2]  );
-printf(" MDuty4:  %15d ",memory.MotorDuty[3]); 
-printf(" ChDuty4:  notSupportedYet \n" );
-printf(" ===============================================\n");
-if ( memory.hoverMode )
-	textcolor(BRIGHT, BLUE, BLACK);
-else
-	textcolor(BRIGHT, YELLOW, BLACK);
-printf(" HoverMode:   %d \n",memory.hoverMode);
-if ( memory.flightAllow )
-	textcolor(BRIGHT, GREEN, BLACK);
-else
-	textcolor(BRIGHT, RED, BLACK);
-printf(" FlightAllow:  %d \n ",memory.flightAllow); 
-if ( memory.RFflightAllow )
-	textcolor(BRIGHT, GREEN, BLACK);
-else
-	textcolor(BRIGHT, RED, BLACK);
-printf(" RFFlightAllow:  %d \n ",memory.RFflightAllow); 
-if ( memory.isCameraRunning ){
-	textcolor(BRIGHT, GREEN, BLACK);
-	printf("Camera: ON");
-}
-else{
-	textcolor(BRIGHT, RED, BLACK);
-	printf("Camera: OFF");
-}
+printf(" U1:      %10.3f\t",memory.U[0] ); printf(" MDuty1:  %5d ",memory.MotorDuty[0]  ); printf(" ChDuty1:  %6d \n",memory.PulseDuty[0]  );
+printf(" U2:      %10.3f\t",memory.U[1] ); printf(" MDuty2:  %5d ",memory.MotorDuty[1] ); printf(" ChDuty2:  %6d \n",memory.PulseDuty[1]  );
+printf(" U3:      %10.3f\t",memory.U[2]   );printf(" MDuty3:  %5d ",memory.MotorDuty[2]   );printf(" ChDuty3:  %6d \n",memory.PulseDuty[2]  );
+printf(" U4:      %10.3f\t",memory.U[3]); printf(" MDuty4:  %5d ",memory.MotorDuty[3]);  printf(" ChDuty4:       - \n" );
+
 textcolor(BRIGHT, WHITE, BLACK);
 printf(" ==============================================================================\n");
 }
