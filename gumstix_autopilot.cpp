@@ -64,6 +64,7 @@ void init_threads()
 
 void init_sharedMemory()
 {
+	//Intialize imuData
 	memory.setRoll(0);
 	memory.setPitch(0);
 	memory.setYaw(0);
@@ -72,13 +73,16 @@ void init_sharedMemory()
 	memory.U[3] = 0;
 	memory.U[4] = 0;
 	memory.isCameraRunning = 0;
+	memory.isCameraRecording = 0;
+	memory.showCameraGUI = 0;
+	memory.GUICloseRequest = 0;
 }
 
 void main_loop()
 {
 	//Main System Loop
 	for(;;){
-		usleep(50000);
+		usleep(25000);
 		systemMonitor();
 	}
 }
@@ -125,7 +129,13 @@ memory.isCameraRunning == 1 ? textcolor(BRIGHT, GREEN, BLACK) : textcolor(BRIGHT
 printf(" Camera:  	 %s \n",memory.isCameraRunning == 1 ? "ON" : "OFF"); 	
 textcolor(BRIGHT, BLUE, BLACK);
 
-printf(" SonarVelocity:  %9.3f\n",memory.getSonar1Velocity()); 
+printf(" SonarVelocity:  %9.3f",memory.getSonar1Velocity()); 
+
+memory.isCameraRunning == 1 ? textcolor(BRIGHT, GREEN, BLACK) : textcolor(BRIGHT, RED, BLACK); //Set color
+printf(" \t\t\t\t Recording:  	 %s \n",memory.isCameraRecording == 1 ? "ON" : "OFF"); 	
+textcolor(BRIGHT, BLUE, BLACK);
+
+
 printf(" Des_Altitude :  %9.3f\n",memory.desiredAltitude );
 printf(" U1:      %10.3f\t",memory.U[0] ); printf(" MDuty1:  %5d ",memory.MotorDuty[0]  ); printf(" ChDuty1:  %6d \n",memory.PulseDuty[0]  );
 printf(" U2:      %10.3f\t",memory.U[1] ); printf(" MDuty2:  %5d ",memory.MotorDuty[1] ); printf(" ChDuty2:  %6d \n",memory.PulseDuty[1]  );

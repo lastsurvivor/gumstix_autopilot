@@ -48,6 +48,9 @@ class SharedMemory{
 	//System State Block - Gumstix Rules
 	public:
 	char isCameraRunning;
+	char isCameraRecording;
+	char showCameraGUI;
+	char GUICloseRequest;
 	
 	public:
 	inline float getRoll(){ return imuRoll; }

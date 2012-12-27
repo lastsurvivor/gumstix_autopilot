@@ -4,8 +4,11 @@
 #include "ch6dm_linux.h"					// IMU Operations
 #include "adcAccess.h"						// ADC Operations
 #include "tiC2000.h"						// Microcontroller Communication
-#include <cv.h>								// OpenCV
-#include <highgui.h>						// OpenCV
+// OpenCV Libraries
+
+#include <cv.h>
+#include <highgui.h>
+
 
 /*******************************************************************************
 * Function Name  : adcThreadRun
@@ -51,6 +54,7 @@ void *adcThreadRun(void *param)
 	close(fd);
 	}			
 }
+
 
 /*******************************************************************************
 * Function Name  : serial1ThreadRun
@@ -179,6 +183,8 @@ void *serial1ThreadRun(void *param)
 		/***************SHARED MEMORY ACCESS ****************/
 
 		usleep(serialSleepPeriod * 1000);		// first arg is in ms so...
+		
+		//system("clear");						//UNCOMMENT AFTER
 
 
 	}
@@ -689,58 +695,74 @@ void *cameraThreadRun(void *param)
 {
 	SharedMemory *mem;
 	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
-	mem->isCameraRunning = 1;
-
+	
 	int frameNumber = 0;
 	IplImage *img;
-	CvCapture *capture = cvCaptureFromCAM(-1);
+	CvCapture *capture = cvCaptureFromCAM(0);
 	CvVideoWriter *writer = 0;
 	int exit_key_press = 0;
 	if(capture == NULL)
 	{
-		printf("cvCapture ERROR!!\n");
+		printf("cvCapture ERROR. Disabling camera support \n");
+		mem->isCameraRunning = 0;
+		mem->isCameraRecording = 0;
 	}	
-	int isColor = 1;	
-	//fps is manually set
-	//cvNamedWindow("ibne mali", CV_WINDOW_AUTOSIZE);
+	else{
+		mem->isCameraRunning = 1;
+		int isColor = 1;	
+	
+		if ( mem->showCameraGUI ){
+		   cvNamedWindow("CameraThread", CV_WINDOW_AUTOSIZE);
+		}
+		double fps = 10;    	
+	//	double fps = cvGetCaptureProperty (capture,CV_CAP_PROP_FPS);
+		CvSize size = cvSize((int)cvGetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH),(int)cvGetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT));
 
-	double fps = 10;    	
+		writer = cvCreateVideoWriter("outputVideo.avi",CV_FOURCC('H', '2', '6', '3'),fps,size,isColor);
+		if (writer == NULL)
+	    	{
+			printf("!!! ERROR: cvCreateVideoWriter\n");
+			printf("!!! ERROR: Please Install Codecs\n");
+	    	}
+		else{		
+			FILE *logFile = fopen("outputVideoAngles.txt", "w+");
+			fclose(logFile);
+			while(1){
+			if ( mem->isCameraRecording ){
+				FILE *logFile = fopen("outputVideo.txt", "a+");
+				img = cvQueryFrame(capture);
+				if (img == NULL){
+					printf("!!! ERROR: cvQueryFrame\n");
+					break;
+				}
+				cvWriteFrame(writer,img);
+				//Write current IMU angles to corresponding textfile
+				fprintf(logFile, "IMGFRAME: %d ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  SONAR1VELOCITY: %.5f RAWSONAR: %.5f ",frameNumber, mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getSonar1Velocity(), mem->getRawSonar());
+				frameNumber++;
 
-//	double fps = cvGetCaptureProperty (capture,CV_CAP_PROP_FPS);
-	CvSize size = cvSize((int)cvGetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH),
-		     (int)cvGetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT));
+				if ( mem->showCameraGUI ){
+				   cvShowImage("CameraThread", img);
+				}
+				if ( mem->showCameraGUI && mem->GUICloseRequest ){
+				   cvDestroyWindow(("CameraThread");
+				   mem->showCameraGUI = false;	
+				}
 
-	writer = cvCreateVideoWriter("outputVideo.avi",CV_FOURCC('U', '2', '6', '3'),fps,size,isColor);
-	if (writer == NULL)
-    	{
-        	printf("!!! ERROR: cvCreateVideoWriter\n");
-    	}
+				fclose(logFile);
+			}
+			else{
+				break; //Stop recording
+			}
+			usleep(sysStatusSleepPeriod * 25); // Sleep one second
 		
+			}
+			cvReleaseVideoWriter(&writer);
+			cvReleaseImage(&img);
 
-	FILE *logFile = fopen("outputVideoAngles.txt", "w+");
-	fclose(logFile);
-	while(1)
-	{
-		FILE *logFile = fopen("outputVideo.txt", "a+");
-		img = cvQueryFrame(capture);
-		if (img == NULL)
-        	{
-        		printf("!!! ERROR: cvQueryFrame\n");
-			break;
-	        }
-		cvWriteFrame(writer,img);
-		//Write current IMU angles to corresponding textfile
-		fprintf(logFile, "IMGFRAME: %d ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  SONAR1VELOCITY: %.5f RAWSONAR: %.5f ",frameNumber, mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getSonar1Velocity(), mem->getRawSonar());
-		frameNumber++;
-			
-		usleep(sysStatusSleepPeriod * 25); // Sleep one second
-		fclose(logFile);
-		
+		}
+
 	}
-
-	cvReleaseVideoWriter(&writer);
 	cvReleaseCapture(&capture);
-	cvReleaseImage(&img);
 
 
 }
