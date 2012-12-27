@@ -693,8 +693,15 @@ void *sensorTXThreadRun(void *param)
 
 void *cameraThreadRun(void *param)
 {
+	printf( "cameraThreadRun started \n");
 	SharedMemory *mem;
 	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
+	
+	static char videoLogFileString[127];
+	char folderNameX[127]; 
+	char timeStr[100];
+	char todayDate[100]; 	
+	FILE *logFile;
 	
 	int frameNumber = 0;
 	IplImage *img;
@@ -708,9 +715,40 @@ void *cameraThreadRun(void *param)
 		mem->isCameraRecording = 0;
 	}	
 	else{
+		strcpy(folderNameX, logPathRoot);
+		printf( "Video camera found  %s \n" , folderNameX);
+		DIR *dir = opendir(folderNameX);
+		if ( dir == NULL ){
+			printf("Creating %s/ directory", folderNameX);
+			mkdir(folderNameX, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	//Create logPathRoot directory			
+			printf("Creating %s/%s directory", folderNameX, videoLogPath);
+			strcat(folderNameX, videoLogPath);							
+			mkdir(folderNameX, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	//Create videoLogPath directory			
+		}		
+		closedir(dir);
+		strcpy(folderNameX, logPathRoot);
+		if ( NULL == ( dir = opendir( strcat(folderNameX, videoLogPath) ) ) ){
+			printf("Creating %s/%s directory", folderNameX, videoLogPath);		
+			mkdir(folderNameX, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	//Create videoLogPath directory				
+		}  		
+		
+		
+		char *datePtr;
+		strcpy(videoLogFileString, logPathRoot);			//Copy LogPathRoot 
+		strcat(videoLogFileString, videoLogPath);			//Append FlightLogPath
+		//datePtr = getDateString();							//Append date string to FlightLogFileString
+		//strReplace(datePtr, " ", "_" , &todayDate[0]);		//Replace whitespaces with _
+		//strcat(FlightLogFileString, &todayDate[0]);			//Append today's hour::min
+		getTimeString(&timeStr[0]);
+		strcat(videoLogFileString, timeStr);
+		strcat(videoLogFileString, ".txt");					//Append .txt extension to FlightLogFileString	
+	    const char *videoFileString = replace(videoLogFileString, ".txt", ".avi" );		//Replace whitespaces with _
+		
 		mem->isCameraRunning = 1;
 		int isColor = 1;	
+		printf( "Video camera found 2 %s \n" , videoLogFileString);
 	
+		
 		if ( mem->showCameraGUI ){
 		   cvNamedWindow("CameraThread", CV_WINDOW_AUTOSIZE);
 		}
@@ -718,18 +756,18 @@ void *cameraThreadRun(void *param)
 	//	double fps = cvGetCaptureProperty (capture,CV_CAP_PROP_FPS);
 		CvSize size = cvSize((int)cvGetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH),(int)cvGetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT));
 
-		writer = cvCreateVideoWriter("outputVideo.avi",CV_FOURCC('H', '2', '6', '3'),fps,size,isColor);
+		writer = cvCreateVideoWriter(videoFileString,CV_FOURCC('M', 'P', '4', '2'),fps,size,isColor);
 		if (writer == NULL)
 	    	{
 			printf("!!! ERROR: cvCreateVideoWriter\n");
 			printf("!!! ERROR: Please Install Codecs\n");
 	    	}
 		else{		
-			FILE *logFile = fopen("outputVideoAngles.txt", "w+");
+			logFile = fopen(videoLogFileString, "w+");
 			fclose(logFile);
 			while(1){
 			if ( mem->isCameraRecording ){
-				FILE *logFile = fopen("outputVideo.txt", "a+");
+				logFile = fopen(videoLogFileString, "a+");
 				img = cvQueryFrame(capture);
 				if (img == NULL){
 					printf("!!! ERROR: cvQueryFrame\n");
@@ -744,7 +782,7 @@ void *cameraThreadRun(void *param)
 				   cvShowImage("CameraThread", img);
 				}
 				if ( mem->showCameraGUI && mem->GUICloseRequest ){
-				   cvDestroyWindow(("CameraThread");
+				   cvDestroyWindow("CameraThread");
 				   mem->showCameraGUI = false;	
 				}
 

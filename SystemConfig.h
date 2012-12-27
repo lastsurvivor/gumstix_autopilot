@@ -20,6 +20,7 @@ static const char *companyName   = "SabanciUniversity";	// Default Company name.
 static const char *logPathRoot   = "./blackbox/";		// Root directory of system logpath. Default is "./blackbox"
 static const char *algLogPath    = "algorithm/";		// Algorithms' logging directory. Default is "algorithm/"
 static const char *flightLogPath = "flight/";			// Flight logging directory. Default is "flight/"
+static const char *videoLogPath  = "videos/";			// Flight logging directory. Default is "flight/"
 static const char *serial1Device = "/dev/ttyS1";		// First serial port device address
 static const char *serial2Device = "/dev/ttyS0";		// Second serial port device address
 static const char *adcDevice     = "/dev/twl4030-madc";	// Gumstix ADC Access Device

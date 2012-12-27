@@ -58,4 +58,9 @@ int char_to_int( char* cs);
 int char_to_uint( char* cs);
 void short_to_char(short *src, char *dst);
 void float_to_char(float *src, char *dst);
+char * replace(    char const * const original,     char const * const pattern,     char const * const replacement);
+
+
+
+
 #endif

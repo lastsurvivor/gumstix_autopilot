@@ -73,8 +73,8 @@ void init_sharedMemory()
 	memory.U[3] = 0;
 	memory.U[4] = 0;
 	memory.isCameraRunning = 0;
-	memory.isCameraRecording = 0;
-	memory.showCameraGUI = 0;
+	memory.isCameraRecording = 1;
+	memory.showCameraGUI = 1;
 	memory.GUICloseRequest = 0;
 }
 
@@ -131,7 +131,7 @@ textcolor(BRIGHT, BLUE, BLACK);
 
 printf(" SonarVelocity:  %9.3f",memory.getSonar1Velocity()); 
 
-memory.isCameraRunning == 1 ? textcolor(BRIGHT, GREEN, BLACK) : textcolor(BRIGHT, RED, BLACK); //Set color
+memory.isCameraRecording == 1 ? textcolor(BRIGHT, GREEN, BLACK) : textcolor(BRIGHT, RED, BLACK); //Set color
 printf(" \t\t\t\t Recording:  	 %s \n",memory.isCameraRecording == 1 ? "ON" : "OFF"); 	
 textcolor(BRIGHT, BLUE, BLACK);
 
