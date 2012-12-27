@@ -4,11 +4,8 @@
 #include "ch6dm_linux.h"					// IMU Operations
 #include "adcAccess.h"						// ADC Operations
 #include "tiC2000.h"						// Microcontroller Communication
-// OpenCV Libraries
-
-#include <cv.h>
-#include <highgui.h>
-
+#include <cv.h>								// OpenCV
+#include <highgui.h>						// OpenCV
 
 /*******************************************************************************
 * Function Name  : adcThreadRun
@@ -54,7 +51,6 @@ void *adcThreadRun(void *param)
 	close(fd);
 	}			
 }
-
 
 /*******************************************************************************
 * Function Name  : serial1ThreadRun
@@ -183,8 +179,6 @@ void *serial1ThreadRun(void *param)
 		/***************SHARED MEMORY ACCESS ****************/
 
 		usleep(serialSleepPeriod * 1000);		// first arg is in ms so...
-		
-		//system("clear");						//UNCOMMENT AFTER
 
 
 	}

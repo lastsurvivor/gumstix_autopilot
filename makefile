@@ -9,13 +9,13 @@
 
 # build target specs
 CC = g++
-CFLAGS = -O3 -I/usr/local/include/opencv -I/usr/local/include -I/usr/include/opencv
+CFLAGS = -O0 -I/usr/local/include/opencv -I/usr/local/include -I/usr/include/opencv
 OUT_DIR = release
-LIBS = -lpthread -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann
+LIBS = -lpthread -lopencv_core -lopencv_imhttp://karytech.blogspot.com/2012/05/opencv-24-on-ubuntu-1204.htmlgproc -lopencv_highgui -lopencv_ml http://karytech.blogspot.com/2012/05/opencv-24-on-ubuntu-1204.html-lopencv_video -lopencv_features2d -lopenhttp://karytech.blogspot.com/2012/05/opencv-24-on-ubuntu-1204.htmlcv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann
 
 # first target entry is the target invoked when typing 'make'
 default: autoPilot1.2
-
+http://karytech.blogspot.com/2012/05/opencv-24-on-ubuntu-1204.html
 autoPilot1.2: $(OUT_DIR)/ch6dm_linux.c.o $(OUT_DIR)/adcAccess.cpp.o $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o
 	@echo -n 'Linking autoPilot1.2... '
 	@$(CC) $(CFLAGS) -o autoPilot1.2 $(OUT_DIR)/ch6dm_linux.c.o $(OUT_DIR)/adcAccess.cpp.o $(OUT_DIR)/gumstix_autopilot.cpp.o $(OUT_DIR)/SystemThreads.cpp.o $(OUT_DIR)/Utility.cpp.o $(LIBS)
