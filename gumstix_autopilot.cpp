@@ -59,7 +59,7 @@ void init_threads()
 	iret4 = pthread_create( &loggerThread, NULL, loggerThreadRun, (void*) &memory);
 	iret5 = pthread_create( &sysStatusTXThread, NULL, sysStatusTXThreadRun, (void*) &memory);
 	iret6 = pthread_create( &sensorTXThread, NULL, sensorTXThreadRun, (void*) &memory);
-	//iret7 = pthread_create( &cameraThread, NULL, cameraThreadRun, (void*) &memory);
+	iret7 = pthread_create( &cameraThread, NULL, cameraThreadRun, (void*) &memory);
 }
 
 void init_sharedMemory()
