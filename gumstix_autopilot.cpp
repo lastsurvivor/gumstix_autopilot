@@ -64,7 +64,6 @@ void init_threads()
 
 void init_sharedMemory()
 {
-	//Intialize imuData
 	memory.setRoll(0);
 	memory.setPitch(0);
 	memory.setYaw(0);
