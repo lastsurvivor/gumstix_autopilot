@@ -35,7 +35,9 @@ class SharedMemory{
 	float sonarRate;
 	
 	float sonar;
-	float sonarVelocity;
+	float medianFiltered;
+	float medianDiff;
+	float medianInt;
 	float desiredAltitude;
 	float rawSonar;
 	
@@ -52,13 +54,21 @@ class SharedMemory{
 	char showCameraGUI;
 	char GUICloseRequest;
 	
+	// System variables
+	char SERIAL2_DEBUG;
+	char showMonitorGUI;
+	
+	
 	public:
 	inline float getRoll(){ return imuRoll; }
 	inline float getPitch() {return imuPitch; }
 	inline float getYaw(){ return imuYaw; }
 	inline float getSonar(int sonarId){ return adcValues[sonarId]; }
 	inline float getSonar1(){ return sonar; }
-	inline float getSonar1Velocity(){ return sonarVelocity; }
+//	inline float getSonar1Velocity(){ return sonarVelocity; }
+	inline float getMedianFiltered(){ return medianFiltered; }
+	inline float getMedianDiff(){ return medianDiff; }
+	inline float getMedianInt(){ return medianInt; }
 	inline float getRawSonar(){ return rawSonar;}
 	inline float getU1(){ return U[0]; }
 	inline float getU2(){ return U[1]; }

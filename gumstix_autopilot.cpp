@@ -39,6 +39,16 @@ SharedMemory memory;
 
 int main(int argc, char *argv[])
 {
+	
+	if ( argc > 1 ){
+	    if ( strcmp( argv[1], "-d" ) == 0 ){
+			memory.SERIAL2_DEBUG = 1;
+			memory.showMonitorGUI = 0;
+		}
+}else{
+			memory.SERIAL2_DEBUG = 0;
+			memory.showMonitorGUI = 1;	}
+	
 	init_sharedMemory();
 	printf("Shared Memory Initialized\n");
 	init_threads();
@@ -83,7 +93,8 @@ void main_loop()
 	//Main System Loop
 	for(;;){
 		usleep(25000);
-		systemMonitor();
+		if ( memory.showMonitorGUI )
+		    systemMonitor();
 	}
 }
 
@@ -129,12 +140,14 @@ memory.isCameraRunning == 1 ? textcolor(BRIGHT, GREEN, BLACK) : textcolor(BRIGHT
 printf(" Camera:  	 %s \n",memory.isCameraRunning == 1 ? "ON" : "OFF"); 	
 textcolor(BRIGHT, BLUE, BLACK);
 
-printf(" SonarVelocity:  %9.3f",memory.getSonar1Velocity()); 
+printf(" MedianFiltered:  %9.3f",memory.getMedianFiltered()); 
+
 
 memory.isCameraRecording == 1 ? textcolor(BRIGHT, GREEN, BLACK) : textcolor(BRIGHT, RED, BLACK); //Set color
 printf(" \t\t\t\t Recording:  	 %s \n",memory.isCameraRecording == 1 ? "ON" : "OFF"); 	
 textcolor(BRIGHT, BLUE, BLACK);
-
+printf(" MedianDiff:  %9.3f\t\t",memory.getMedianDiff());
+printf(" MedianInt:  %9.3f\t\t\n",memory.getMedianInt()); 
 
 printf(" Des_Altitude :  %9.3f\n",memory.desiredAltitude );
 printf(" U1:      %10.3f\t",memory.U[0] ); printf(" MDuty1:  %5d ",memory.MotorDuty[0]  ); printf(" ChDuty1:  %6d \n",memory.PulseDuty[0]  );

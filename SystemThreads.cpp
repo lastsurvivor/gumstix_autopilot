@@ -192,7 +192,7 @@ void *serial1ThreadRun(void *param)
 }
 void *serial2ThreadRun(void *param)
 {
-	bool SERIAL2_DEBUG = false;
+	
 	SharedMemory *mem;
 	mem = (SharedMemory*) (param);		// Get Shared Memory Instance of the System
 
@@ -235,7 +235,7 @@ void *serial2ThreadRun(void *param)
 	unsigned int pulseDuty[4];
  	float roll,pitch, yaw, rawYaw, rawSonar;
  	float rollRate, pitchRate, yawRate;
- 	float sonar, sonarVelocity, desiredAltitude = 0;
+ 	float sonar, medianFiltered, desiredAltitude, medianDiff, medianInt = 0;
  	short hoverMode, RFflightAllow, flightAllow;
 	int i;
 	float U[4];
@@ -265,7 +265,7 @@ void *serial2ThreadRun(void *param)
 		}*/
 		
 		if ( byte != TI_SENSOR_DATA && byte != TI_PID_DATA && byte != TI_RATE_DATA && byte != TI_PULSE_DATA && byte != TI_SONAR_DATA && byte != TI_PILOT_DATA){
-			if ( SERIAL2_DEBUG ){
+			if ( mem->SERIAL2_DEBUG ){
 				 printf("Warning there is a package type which is not supported : %x !\n", byte);
 			 }
 		 	goto search_header;
@@ -291,7 +291,7 @@ void *serial2ThreadRun(void *param)
 		mem->setRoll(roll);
 		mem->setPitch(pitch);
 		mem->setYaw(yaw);
-		if ( SERIAL2_DEBUG )printf("IMU DATA CAME\n");
+		if ( mem->SERIAL2_DEBUG )printf("IMU DATA CAME\n");
 		}
 		else if ( byte == TI_PID_DATA){
 			/*
@@ -317,7 +317,9 @@ void *serial2ThreadRun(void *param)
 			mem->U[3] = U[3];
 			printf("MotorDuties: %d %d %d %d \n", motorDuty[0], motorDuty[1], motorDuty[2], motorDuty[3]);
 			printf("Virtual   U: %f %f %f %f \n", U[0], U[1], U[2], U[3]);
-			if ( SERIAL2_DEBUG )printf("PID DATA CAME\n");
+			if ( mem->SERIAL2_DEBUG ){
+				//printf("PID DATA CAME\n");
+			}
 		}
 		else if ( byte == TI_PULSE_DATA ){
 			pulseDuty[0] = char_to_uint( &dataBuffer[0]);
@@ -326,7 +328,7 @@ void *serial2ThreadRun(void *param)
 			mem->PulseDuty[0] = pulseDuty[0];
 			mem->PulseDuty[1] = pulseDuty[1];
 			mem->PulseDuty[2] = pulseDuty[2];			
-			if ( SERIAL2_DEBUG )printf("PULSE PACKAGE CAME : %d %d %d %d\n", pulseDuty[0], pulseDuty[1], pulseDuty[2], pulseDuty[3]);
+			if ( mem->SERIAL2_DEBUG )printf("PULSE PACKAGE CAME : %d %d %d %d\n", pulseDuty[0], pulseDuty[1], pulseDuty[2], pulseDuty[3]);
 		}
 		else if ( byte == TI_RATE_DATA ){
 			rollRate = char_to_float( &dataBuffer[0]);
@@ -335,16 +337,24 @@ void *serial2ThreadRun(void *param)
 			mem->imuRollRate = rollRate;
 			mem->imuPitchRate = pitchRate;		
 			mem->imuYawRate = yawRate;
-			if ( SERIAL2_DEBUG )printf("RATE PACKAGE CAME : %f %f %f \n", rollRate, pitchRate, yawRate);
+			if ( mem->SERIAL2_DEBUG ){
+				//printf("RATE PACKAGE CAME : %f %f %f \n", rollRate, pitchRate, yawRate);
+			}
 		}
 		else if(byte == TI_SONAR_DATA){
-	        sonar = char_to_float( &dataBuffer[0]);
-			sonarVelocity = char_to_float( &dataBuffer[4]);
-			desiredAltitude = char_to_float( &dataBuffer[8]);
-			mem->sonar = sonar;				
-			mem->sonarVelocity = sonarVelocity;
+	        sonar 		    =  char_to_float( &dataBuffer[0]);
+			medianFiltered  =  char_to_float( &dataBuffer[4]);
+			desiredAltitude =  char_to_float( &dataBuffer[8]);
+			medianDiff      =  char_to_float( &dataBuffer[12]);
+			medianInt       =  char_to_float( &dataBuffer[16]);
+			
+			mem->sonar           = sonar;				
+			mem->medianFiltered  = medianFiltered;
 			mem->desiredAltitude = desiredAltitude;
-			if ( SERIAL2_DEBUG )printf("SONAR PACKAGE CAME : %f %f %f \n", sonar, sonarVelocity, desiredAltitude);
+			mem->medianDiff      = medianDiff;
+			mem->medianInt       = medianInt;
+						
+			if ( mem->SERIAL2_DEBUG )printf("SONAR PACKAGE CAME : %f %f %f %f %f \n", sonar, medianFiltered, desiredAltitude, medianDiff, medianInt);
 		}
 		else if(byte == TI_PILOT_DATA){
 	        hoverMode = char_to_short( &dataBuffer[0]);
@@ -355,7 +365,9 @@ void *serial2ThreadRun(void *param)
 			mem->flightAllow = flightAllow;
 			mem->RFflightAllow = RFflightAllow;
 			mem->rawSonar = rawSonar;
-			if ( SERIAL2_DEBUG )printf("PILOT PACKAGE CAME : %d %d %d %f \n", mem->hoverMode, mem->RFflightAllow, mem->flightAllow, mem->rawSonar);
+			if ( mem->SERIAL2_DEBUG ){
+				//printf("PILOT PACKAGE CAME : %d %d %d %f \n", mem->hoverMode, mem->RFflightAllow, mem->flightAllow, mem->rawSonar);
+			}
 		}			
 		else{
 			//Other package types not supported for now
@@ -427,7 +439,7 @@ void *loggerThreadRun(void *param)
 		datePtr = getDateString();
 	
 		//Append shared memory to logfile
-		fprintf(logFile, "ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  SONAR1VELOCITY: %.5f RAWSONAR: %.5f ", mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getSonar1Velocity(), mem->getRawSonar());
+		fprintf(logFile, "ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  MEDIANFILTERED: %.5f MEDIANDIFF: %.5f MEDIANINT: %.5f RAWSONAR: %.5f ", mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getMedianFiltered(), mem->getMedianDiff(), mem->getMedianInt(), mem->getRawSonar());
 		fprintf(logFile, "ROLLRATE: %.5f PITCHRATE: %.5f ", mem->imuRollRate, mem->imuPitchRate);
 		fprintf(logFile, "U1: %.5f U2: %.5f U3: %.5f U4: %.5f ", mem->getU1(), mem->getU2(), mem->getU3(), mem->getU4());
 		fprintf(logFile, "MDuty1: %d MDuty2: %d MDuty3: %d MDuty4: %d ", mem->getDuty1(), mem->getDuty2(), mem->getDuty3(), mem->getDuty4());
@@ -775,7 +787,7 @@ void *cameraThreadRun(void *param)
 				}
 				cvWriteFrame(writer,img);
 				//Write current IMU angles to corresponding textfile
-				fprintf(logFile, "IMGFRAME: %d ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  SONAR1VELOCITY: %.5f RAWSONAR: %.5f ",frameNumber, mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getSonar1Velocity(), mem->getRawSonar());
+				fprintf(logFile, "ROLL: %.5f PITCH: %.5f YAW: %.5f SONAR1: %.5f  MEDIANFILTERED: %.5f MEDIANDIFF: %.5f MEDIANINT: %.5f RAWSONAR: %.5f ", mem->getRoll(), mem->getPitch(), mem->getYaw(),  mem->getSonar1(), mem->getMedianFiltered(), mem->getMedianDiff(), mem->getMedianInt(), mem->getRawSonar());
 				frameNumber++;
 
 				if ( mem->showCameraGUI ){

@@ -22,7 +22,7 @@ static const char *algLogPath    = "algorithm/";		// Algorithms' logging directo
 static const char *flightLogPath = "flight/";			// Flight logging directory. Default is "flight/"
 static const char *videoLogPath  = "videos/";			// Flight logging directory. Default is "flight/"
 static const char *serial1Device = "/dev/ttyS1";		// First serial port device address
-static const char *serial2Device = "/dev/ttyS0";		// Second serial port device address
+static const char *serial2Device = "/dev/ttyUSB0";		// Second serial port device address
 static const char *adcDevice     = "/dev/twl4030-madc";	// Gumstix ADC Access Device
 /* Thread Configuration 
  *
