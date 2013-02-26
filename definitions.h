@@ -1,0 +1,8 @@
+#ifndef PILOT_DEFS_H
+#define PILOT_DEFS_H
+
+#define SHARED_MEMORY_SIZE 4096
+#define SHARED_MEMORY_KEY  6666
+
+
+#endif
