@@ -3,6 +3,7 @@
 
 #define SHARED_MEMORY_SIZE 4096
 #define SHARED_MEMORY_KEY  6666
+#define SHARED_MEMORY_INIT_VAL  127
 
 
 #endif
